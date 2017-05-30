@@ -76,6 +76,8 @@ lotplan.main = (function(jQuery, ko){
 
         // data returned from a search
         _self.searchData = ko.observableArray();
+		
+		_self.selection = ko.observableArray();
 
         // products to review before adding to a cart
         _self.selectedProducts = ko.observableArray();
@@ -95,6 +97,8 @@ lotplan.main = (function(jQuery, ko){
         _self.goToCart = goToCart;
 
         _self.checkAllSearchData = checkAllSearchData;
+		_self.clearSelection = clearSelection;
+		_self.removeSelection = removeSelection;
     }
 
 
@@ -143,8 +147,19 @@ lotplan.main = (function(jQuery, ko){
         
         _self.isLoading(false);
     }
-
-
+	
+	 function clearSelection() {
+		 _self.selection().forEach(function(selection){
+			lotplan.components.searchresults.removeMarker(selection.marker)
+		 });
+		 _self.selection.removeAll();
+	 }
+	 
+	 function removeSelection() {
+		lotplan.components.searchresults.removeMarker(this.marker)
+		_self.selection.remove(this);
+	 }
+	 
     function checkAllSearchData(vm, e) {
 
         // first remove all items from our selection
@@ -273,6 +288,7 @@ lotplan.main = (function(jQuery, ko){
 
         getSearchData: function () { return _self.searchData; },
         getSelectedData: function () { return _self.selectedData; },
+		getSelection: function () { return _self.selection; },
         getSelectedProducts: function () { return _self.selectedProducts; }
 
     };

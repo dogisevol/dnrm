@@ -58,10 +58,11 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 					draggable: true,
 					icon: selectedIcon,
 
-				}).bindPopup("<input type='button' value='Delete this marker' class='marker-delete-button'/>");
-
+				});
+				marker.bindPopup(marker.getLatLng() + "<br><center><a class='marker-delete-button'/>Remove marker</a></center>");
+				lotplan.main.getSelection().push({"marker": marker, "point": L.Projection.Mercator.project(marker.getLatLng())})
 				marker.on("popupopen", onPopupOpen);
-		   
+			
 				return marker;
 			}
 		}).addTo(markerGroup);
@@ -77,8 +78,13 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 
 		// To remove marker on click of delete
 		$(".marker-delete-button:visible").click(function () {
+			lotplan.main.getSelection().remove(tempMarker)
 			map.removeLayer(tempMarker);
 		});
+	}
+	
+	function removeMarker(marker){
+		map.removeLayer(marker);
 	}
 	
     function setupMap(){
@@ -315,6 +321,7 @@ lotplan.components.searchresults = (function(jQuery,ko) {
         setup: setup,
         setupMap: setupMap,
         setSearchData: setSearchData,
+		removeMarker: removeMarker,
 
         // Component
         viewModel: viewModel,       

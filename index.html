@@ -156,6 +156,25 @@
 								</TR>
 							</TBODY>
 						</TABLE>
+						
+						<TABLE id="results" class="TABLE TABLE-condensed TABLE-hover">
+							<THEAD>
+								<TR>
+									<TH></TH>
+									<TH></TH>
+									<TH><INPUT type="button" class="btn btn-success" value="Remove all" style="float:right" data-bind="click: $root.clearSelection "/></TH>
+								</TR>
+							</TR>
+							</THEAD>
+							<TBODY data-bind="foreach: $root.selection">
+								<TR>
+									<TD data-bind="text: marker.getLatLng().lat"></TD>
+									<TD data-bind="text: marker.getLatLng().long"></TD>
+									<TD><INPUT type="button" class="btn btn-success" value="Remove" style="float:right" data-bind="click: $root.removeSelection "/></TD>
+								</TR>
+							</TBODY>
+						</TABLE>
+						
 					</DIV>
 					<!-- /ko -->
 				</SCRIPT>
