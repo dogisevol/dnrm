@@ -157,7 +157,7 @@
 							</TBODY>
 						</TABLE>
 						
-						<TABLE id="results" class="TABLE TABLE-condensed TABLE-hover">
+						<TABLE id="results" class="TABLE TABLE-condensed TABLE-hover" border>
 							<THEAD>
 								<TR>
 									<TH></TH>
@@ -168,8 +168,8 @@
 							</THEAD>
 							<TBODY data-bind="foreach: $root.selection">
 								<TR>
-									<TD data-bind="text: marker.getLatLng().lat"></TD>
-									<TD data-bind="text: marker.getLatLng().long"></TD>
+									<TD data-bind="text: dms.lat"></TD>
+									<TD data-bind="text: dms.lng"></TD>
 									<TD><INPUT type="button" class="btn btn-success" value="Remove" style="float:right" data-bind="click: $root.removeSelection "/></TD>
 								</TR>
 							</TBODY>
