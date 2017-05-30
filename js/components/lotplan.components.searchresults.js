@@ -13,10 +13,15 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 
 
     var _self,
+		map,
+		markerGroup,
         markers = [],
         featureLayerUrl = "https://geospatial.information.qld.gov.au/ArcGIS/rest/services/QLD/LandParcelPropertyFramework/MapServer/4";
         featureLayerUrl = "https://geospatial.information.qld.gov.au/ArcGIS/rest/services/QLD/LandParcelPropertyFramework/MapServer/4";
-		featureLayerUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer"
+		dynamicLayerUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",		
+		unselectedIcon = new L.Icon.Default({ iconUrl: "https://www.dnrm.qld.gov.au/?a=332335", shadowUrl: 'https://www.dnrm.qld.gov.au/?a=332701' } ),
+        selectedIcon = new L.Icon.Default({ iconUrl: "https://www.dnrm.qld.gov.au/?a=332681", shadowUrl: 'https://www.dnrm.qld.gov.au/?a=332701', } );
+
 
     /********************************************************************************** Lifecycle */
 
@@ -27,8 +32,57 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 
     }
 
+	// Script for adding marker on map click
+	function onMapClick(e) {
+		
+		var geojsonFeature = {
+			"type": "Feature",
+				"properties": {},
+				"geometry": {
+					"type": "Point",
+					"coordinates": [e.latlng.lat, e.latlng.lng]
+			}
+		}
+
+		var marker;
+		var markerGroup = L.layerGroup().addTo(map)
+		L.geoJson(geojsonFeature, {
+			
+			pointToLayer: function(feature, latlng){
+				
+				marker = L.marker(e.latlng, {
+					
+					title: "Resource Location",
+					alt: "Resource Location",
+					riseOnHover: true,
+					draggable: true,
+					icon: selectedIcon,
+
+				}).bindPopup("<input type='button' value='Delete this marker' class='marker-delete-button'/>");
+
+				marker.on("popupopen", onPopupOpen);
+		   
+				return marker;
+			}
+		}).addTo(markerGroup);
+	}
+	
+		// Function to handle delete as well as other events on marker popup open
+	function onPopupOpen() {
+		var tempMarker = this;
+
+		//var tempMarkerGeoJSON = this.toGeoJSON();
+
+		//var lID = tempMarker._leaflet_id; // Getting Leaflet ID of this marker
+
+		// To remove marker on click of delete
+		$(".marker-delete-button:visible").click(function () {
+			map.removeLayer(tempMarker);
+		});
+	}
+	
     function setupMap(){
-      var map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
+      map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
         /*L.tileLayer('https://api{s}.nowwhere.com.au/1.1.2/tile/50/{z}/{x}/{y}/?key=oDYTVpCsmigGKoxiy7ZxyNpIasMjEcMelJqTyz1x', {
             minZoom: 13,
             maxZoom: 18,
@@ -50,17 +104,17 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 		  
 
 		  L.esri.dynamicMapLayer({
-			url: featureLayerUrl,
+			url: dynamicLayerUrl,
 			opacity: 0.7,
 			dynamicLayers: [{
-				 "id": 77,
+				 "id": 1,
 				 "source": {
 				  "type": "mapLayer",
 				  "mapLayerId": 4
 				 }
 				},
 				{
-				 "id": 78,
+				 "id": 1000,
 				 "source": {
 				  "type": "mapLayer",
 				  "mapLayerId": 0
@@ -68,7 +122,12 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 				}]
 		  }).addTo(map);
 		  
+	markerGroup = L.layerGroup().addTo(map);
+	map.on('click', onMapClick);
+	
 
+	
+	
       //clear markers
       if (markers) {
         for(i=0;i<markers.length;i++) { map.removeLayer(markers[i]); }
@@ -78,10 +137,8 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 
       var bounds = L.latLngBounds([]),
           markers = [],
-          searchData = lotplan.main.getSearchData(),
-          unselectedIcon = new L.Icon.Default({ iconUrl: "https://www.dnrm.qld.gov.au/?a=332335", shadowUrl: 'https://www.dnrm.qld.gov.au/?a=332701' } ),
-          selectedIcon = new L.Icon.Default({ iconUrl: "https://www.dnrm.qld.gov.au/?a=332681", shadowUrl: 'https://www.dnrm.qld.gov.au/?a=332701', } );
-
+          searchData = lotplan.main.getSearchData()
+        
 
       for (var i = 0; i < searchData().length; i++) {
         var item = searchData()[i], attrs = item.attributes;
@@ -179,6 +236,7 @@ lotplan.components.searchresults = (function(jQuery,ko) {
       //add click events to results table
       eventBinding();
     }
+		
 
     function eventBinding(){
       jQuery('#results tbody td').on('click', function(e){

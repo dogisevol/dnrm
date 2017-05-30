@@ -147,6 +147,53 @@ lotplan.components.searchresults = (function(jQuery,ko) {
       //add click events to results table
       eventBinding();
     }
+	
+	// Add new marker to marker group
+	function addMarker(e){
+		// Add marker to map at click location
+		var newMarker = new L.marker(e.latlng, {title: e.latlng.toString()}).addTo(markerGroup);			
+		//console.log(newMarker);
+		addMarkerToTable(newMarker);			
+	}		
+	map.on('click', addMarker);
+	
+	// Add new marker to table
+	function addMarkerToTable(newMarker) {	
+		//var table = document.getElementById('table');
+		var table = document.getElementById('table');
+		var rowCount = table.rows.length;
+		var row = table.insertRow(rowCount);
+		var cell1 = row.insertCell(0);
+		cell1.innerHTML = newMarker._latlng.toString();			
+		//cell1.innerHTML = newMarker._latlng.lat.toString() + ', ' + newMarker._latlng.lng.toString();
+	}
+
+	document.getElementById("removeCapturedDataPointsBtnId").onclick = removeCapturedDataPoints;
+	
+	// Remove all markers from marker group 
+	function removeCapturedDataPoints() {			
+		var idstore = [];   
+		for(var x in markerGroup._layers) {
+			console.log(x);
+			markerGroup.removeLayer(x);
+		}
+		
+		// Remove all markers from table
+		removeDataCapturedPointsFromTable();
+		
+		//alert('Deleted points');
+		// Remove all markers by removing markerGroup
+		//map.removeLayer(markerGroup);
+	}
+	
+	
+	function removeDataCapturedPointsFromTable() {
+		var table = document.getElementById("table");
+		for(var i = 0; i < table.rows.length;)
+		{   
+		   table.deleteRow(i);
+		}
+	}
 
     function eventBinding(){
       jQuery('#results tbody td').on('click', function(e){
