@@ -134,7 +134,7 @@
 					<DIV id="results-section">
 						<H2>Select your property</H2>
 						<DIV id="map"></DIV>
-						
+						<!-- ko if: $root.selection().length > 0 -->
 						<TABLE id="results" class="table table-condensed table-hover" >
 							<THEAD>
 								<TR>
@@ -152,7 +152,7 @@
 								</TR>
 							</TBODY>
 						</TABLE>
-						
+						<!-- /ko -->
 					</DIV>
 					<!-- /ko -->
 				</SCRIPT>
