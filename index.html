@@ -8,26 +8,26 @@
 		<LINK href="css/overwrite.css" rel="stylesheet" type="text/css" data-bind-filename="overwrite.css">    
 		<LINK href="css/lib/leaflet.css" rel="stylesheet" data-bind-filename="leaflet.css"> 
 
-		<SCRIPT src="js/lib/jquery-1.12.4.min.js" type="text/javaSCRIPT" data-bind-filename="jquery.min.js"></SCRIPT>
-		<SCRIPT src="js/lib/knockout-min.js" type="text/javaSCRIPT" data-bind-filename="knockout-min.js"></SCRIPT>
-		<SCRIPT src="js/lib/bootstrap.min.js" type="text/javaSCRIPT" data-bind-filename="bootstrap.min.js"></SCRIPT>
-		<SCRIPT src="js/lib/moment.min.js" type="text/javaSCRIPT" data-bind-filename="moment.min.js"></SCRIPT>
-		<SCRIPT src="js/lib/typeahead.bundle.min.js" type="text/javaSCRIPT" data-bind-filename="typeahead.bundle.min.js"></SCRIPT> 
+		<SCRIPT src="js/lib/jquery-1.12.4.min.js" type="text/javascript" data-bind-filename="jquery.min.js"></SCRIPT>
+		<SCRIPT src="js/lib/knockout-min.js" type="text/javascript" data-bind-filename="knockout-min.js"></SCRIPT>
+		<SCRIPT src="js/lib/bootstrap.min.js" type="text/javascript" data-bind-filename="bootstrap.min.js"></SCRIPT>
+		<SCRIPT src="js/lib/moment.min.js" type="text/javascript" data-bind-filename="moment.min.js"></SCRIPT>
+		<SCRIPT src="js/lib/typeahead.bundle.min.js" type="text/javascript" data-bind-filename="typeahead.bundle.min.js"></SCRIPT> 
 		<SCRIPT src="js/lib/leaflet.js" data-bind-filename="leaflet.js"></SCRIPT>
 		<SCRIPT src="js/lib/esri-leaflet.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/components/lotplan.components.lotplansearchfields.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/components/lotplan.components.addresssearchfields.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/components/lotplan.components.searchresults.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/components/lotplan.components.review.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/components/lotplan.components.cart.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/components/lotplan.components.receipt.js"></SCRIPT>
-		<SCRIPT type="text/javaSCRIPT" src="js/lotplan.utils.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/components/lotplan.components.lotplansearchfields.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/components/lotplan.components.addresssearchfields.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/components/lotplan.components.searchresults.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/components/lotplan.components.review.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/components/lotplan.components.cart.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/components/lotplan.components.receipt.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/lotplan.utils.js"></SCRIPT>
 	</HEAD> 
 	<BODY>
 	<DIV class="bodyContent">
 		<DIV id="components">
 			<!-- ko if: pageRoute() === 'search'  -->                 
-			<DIV class="panel-group" id="search_accordian" role="tablist" aria-multiselecTABLE="false">
+			<DIV class="panel-group" id="search_accordian" role="tablist" aria-multiselectable="false">
 				<DIV class="panel panel-default">
 					<DIV class="panel-heading" id="address_heading" role="tab" aria-expanded="true" aria-controls="address_tab" href="#address_tab" data-toggle="collapse" data-parent="#search_accordian">
 						<H4 class="panel-title">Search by address</H4>
@@ -90,7 +90,7 @@
 						<DIV class="alert alert-danger col-md-12" role="alert">
 							<P>We can&#39;t find any results for &#34;<SPAN data-bind="text: $data.searchLot()"></SPAN>&#34; and &#34;<SPAN data-bind="text: $data.searchPlan()"></SPAN>&#34;. Please check what you&#39;ve entered, or try a different search.</P>
 							<P>If you believe the address is correct, the property you are searching for may not be in our listings yet. Contact a <A href="https://www.dnrm.qld.gov.au/our-department/contact-us/dnrm-business-centre-contacts">a DNRM Business Centre</a> for assistance.</P>
-							<P>Common property titles such as a community title scheme or body corporate are not available here. An alternative option is to purchase your search via one of the Department&#39;s online service providers. A list of approved online distributors is available <A href="https://www.business.qld.gov.au/industry/titles-property-construction/titles-property/online-services/online-distributors." target="_blank">here</a>.</P>
+							<P>Common property titles such as a community title scheme or body corporate are not available here. An alternative option is to purchase your search via one of the Department&#39;s online service providers. A list of approved online distributors is available <A href="https://www.business.qld.gov.au/industry/titles-property-construction/titles-property/online-services/online-distributors." target="_blank">here</A>.</P>
 						</DIV>
 						<!-- /ko -->
 					</FORM>
@@ -111,7 +111,7 @@
 								<DIV class="alert hidden" role="alert">
 									<!-- filled by js on error or warning -->
 								</DIV>
-								<INPUT type="submit" value="Search" class="btn btn-success">
+								<INPUT type="SUBMIT" value="Search" class="btn btn-success">
 								<INPUT type="BUTTON" value="Reset" class="btn btn-default reset"
 									   data-bind="click: $data.resetAddressSearch">
 								<!-- ko if: loading() -->
@@ -122,7 +122,7 @@
 						<!-- ko if: isError() -->
 						  <DIV class="alert alert-danger col-md-12" role="alert">
 						<P>We can&#39;t find any results for &#34;<SPAN data-bind="text: $data.searchText()"></SPAN>&#34;. Please check the format (e.g. Street not St) or try a different search.</P>
-						<P>If you believe the address is correct, the property you are searching for may not be in our listings yet. <A href="mailto:propertysearch@dnrm.qld.gov.au?subject=PaTs%20-%20enquiry">Contact us</a> for assistance.</P>
+						<P>If you believe the address is correct, the property you are searching for may not be in our listings yet. <A href="mailto:propertysearch@dnrm.qld.gov.au?subject=PaTs%20-%20enquiry">Contact us</A> for assistance.</P>
 						</DIV>
 						<!-- /ko -->
 					</FORM>
@@ -134,34 +134,12 @@
 					<DIV id="results-section">
 						<H2>Select your property</H2>
 						<DIV id="map"></DIV>
-						<!-- <h2>Search results</h2> -->
-						<TABLE id="results" class="TABLE TABLE-condensed TABLE-hover">
-							<THEAD>
-								<TR>
-									<TH>Property description</TH>
-									<TH>Lot</TH>
-									<TH>Plan</TH>
-									<TH style="text-align: right;" width="100">Select<SPAN data-bind="visible: $root.searchData().length > 1"> all&nbsp;<INPUT type="checkbox" title="Select all" data-toggle="tooltip" style="float:right" data-bind="click: $root.checkAllSearchData "/></SPAN></TH></TR>
-							</TR>
-							</THEAD>
-							<TBODY data-bind="foreach: $root.searchData">
-								<TR>
-									<TD data-bind="text: attributes.ADDRESS, click: function(e,v){$(e.target).parent().find('INPUT').click();}"></TD>
-									<TD data-bind="text: attributes.LOT, click: function(e,v){$(e.target).parent().find('INPUT').click();}"></TD>
-									<TD data-bind="text: attributes.PLAN, click: function(e,v){$(e.target).parent().find('INPUT').click();}"></TD>
-									<TD data-bind="">
-										<INPUT type="checkbox" style="float:right"
-											   data-bind="checkedValue: attributes, checked:$root.selectedData"/>
-									</TD>
-								</TR>
-							</TBODY>
-						</TABLE>
 						
-						<TABLE id="results" class="TABLE TABLE-condensed TABLE-hover" border>
+						<TABLE id="results" class="table table-condensed table-hover" >
 							<THEAD>
 								<TR>
-									<TH></TH>
-									<TH></TH>
+									<TH> Latitude </TH>
+									<TH> Longitude </TH>
 									<TH><INPUT type="button" class="btn btn-success" value="Remove all" style="float:right" data-bind="click: $root.clearSelection "/></TH>
 								</TR>
 							</TR>
@@ -183,7 +161,7 @@
 				
 		</DIV>
 
-		<SCRIPT type="text/javaSCRIPT" src="js/lotplan.main.js"></SCRIPT>
+		<SCRIPT type="text/javascript" src="js/lotplan.main.js"></SCRIPT>
 	</BODY>
 </HTML>           
 
