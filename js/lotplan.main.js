@@ -89,7 +89,7 @@ lotplan.main = (function(jQuery, ko){
 	
 	 function clearSelection() {
 		 _self.selection().forEach(function(selection){
-			lotplan.components.searchresults.removeMarker(selection.marker)
+			lotplan.components.searchresults.removeMarker(selection)
 		 });
 		 _self.selection.removeAll();
 	 }
