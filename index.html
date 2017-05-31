@@ -18,15 +18,11 @@
 		<SCRIPT type="text/javascript" src="js/components/lotplan.components.lotplansearchfields.js"></SCRIPT>
 		<SCRIPT type="text/javascript" src="js/components/lotplan.components.addresssearchfields.js"></SCRIPT>
 		<SCRIPT type="text/javascript" src="js/components/lotplan.components.searchresults.js"></SCRIPT>
-		<SCRIPT type="text/javascript" src="js/components/lotplan.components.review.js"></SCRIPT>
-		<SCRIPT type="text/javascript" src="js/components/lotplan.components.cart.js"></SCRIPT>
-		<SCRIPT type="text/javascript" src="js/components/lotplan.components.receipt.js"></SCRIPT>
 		<SCRIPT type="text/javascript" src="js/lotplan.utils.js"></SCRIPT>
 	</HEAD> 
 	<BODY>
 	<DIV class="bodyContent">
-		<DIV id="components">
-			<!-- ko if: pageRoute() === 'search'  -->                 
+		<DIV id="components">             
 			<DIV class="panel-group" id="search_accordian" role="tablist" aria-multiselectable="false">
 				<DIV class="panel panel-default">
 					<DIV class="panel-heading" id="address_heading" role="tab" aria-expanded="true" aria-controls="address_tab" href="#address_tab" data-toggle="collapse" data-parent="#search_accordian">
@@ -50,11 +46,7 @@
 				</DIV>
 			</DIV>
 			<searchresults params=""></searchresults>                 
-			<HR>
-			<!-- /ko -->                 
-			<!-- ko if: pageRoute() === 'review'  -->           
-			<review params="'selectedData': selectedData()"></review>                 
-			<!-- /ko -->       
+			<HR>     
 		</DIV>
 
 		<!-- Document fragment: Search Fields --> 				
@@ -146,8 +138,8 @@
 							</THEAD>
 							<TBODY data-bind="foreach: $root.selection">
 								<TR>
-									<TD data-bind="text: dms.lat"></TD>
-									<TD data-bind="text: dms.lng"></TD>
+									<TD data-bind="text: dmsLat"></TD>
+									<TD data-bind="text: dmsLng"></TD>
 									<TD><INPUT type="button" class="btn btn-success" value="Remove" style="float:right" data-bind="click: $root.removeSelection "/></TD>
 								</TR>
 							</TBODY>

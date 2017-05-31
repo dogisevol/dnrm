@@ -76,17 +76,6 @@ lotplan.utils = (function (jQuery) {
     }
 
 
-
-
-
-    function formatCurrency(value) {
-        value = value || 0;
-        return "$" + parseFloat(value).toFixed(2);
-    }
-
-
-
-
     /**
      * Setup the the publish and subscribe system for event messaging
      * @automatic initalisation
@@ -143,119 +132,6 @@ lotplan.utils = (function (jQuery) {
         return !(this.errors.length);
     }
 
-
-
-
-
-    // cart helper
-    function CartHelper(observableArray, cookieName) {
-        this.maxLength = 3800;
-        this.cookieTimeout = 60;
-        this.cookieName = cookieName || "";
-        this.items = observableArray;
-    }
-
-    CartHelper.prototype.remove = function (match) {
-        var result = false,
-            remove = this.find(match),
-            idx = remove ? this.items.indexOf(match) : -1;
-        if (~idx) { result = !!this.items.splice(idx, 1).length; }
-        this.updateCookie();
-        return result;
-    }
-
-    CartHelper.prototype.find = function (match, convert) {
-        match = convert ? this.converter.call(this, match) : match;
-        var found = null;
-        this.forEach(this.items(), function (itm, i) {
-            if (itm === match || this.equality.call(this, itm, match, i)) {
-                return !(found = itm);  // deliberate assignment
-            }
-        })
-        return found;
-    }
-
-    CartHelper.prototype.add = function (items, convert, exceedFn) {
-        items = convert ? this.convert(items) : items;
-        if (exceedFn && this.willExceedLimit(items, false)) {
-            exceedFn.call(this);
-            return false;
-        }
-        this.items.push.apply(this.items, items);
-        this.updateCookie();
-        return true;
-    }
-
-    CartHelper.prototype.willExceedLimit = function (newItems, convert) {
-        var currentLen = this.serialize().length,
-            addLen = this.serialize(convert ? this.convert(newItems) : newItems).length;
-        return (currentLen + addLen) > this.maxLength;
-    }
-
-    CartHelper.prototype.getTotal = function () {
-        var total = 0;
-        this.forEach(this.items(), function (itm, i) {
-            total += parseFloat(this.getAmount.call(this, itm, i));
-        });
-        return total;
-    }
-
-    CartHelper.prototype.forEach = function (arr, fn) {
-        for (var i = 0; i < arr.length; i++) {
-            if (fn.call(this, arr[i], i) === false) { break; }
-        }
-    }
-
-    CartHelper.prototype.serialize = function (data) {
-        data = data || this.items() || [];
-        return JSON.stringify(data)
-    }
-
-    //NOTE: Passing true to updateCookie will clear the cookies.
-    CartHelper.prototype.updateCookie = function (clear) {
-        setCookie(this.cookieName, clear ? "" : this.serialize(), this.cookieTimeout);
-    }
-
-    CartHelper.prototype.convert = function (arr) {
-        var output = [];
-        this.forEach(arr, function (itm, i) {
-            output.push(this.converter.call(this, itm, i));
-        });
-        return output;
-    }
-
-    CartHelper.prototype.initalise = function (arr) {
-        try {
-            this.items.push.apply(this.items, JSON.parse(lotplan.utils.getCookie(this.cookieName)));
-        } catch (ex) {
-            this.updateCookie(true);
-        }
-    }
-
-    // overrides
-
-    // convert an object (in this case a data/product pair) into a limited length cookie object
-    CartHelper.prototype.converter = function (itm, i) {
-        return { i: itm.product.pid, a: itm.product.price, t: itm.data.title }; // l: itm.data.LOT, p: itm.data.PLAN, t: itm.data.LOT_TITLE(), d: itm.data.ADDRESS };
-    }
-
-    // how to determine equality
-    CartHelper.prototype.equality = function (a, b, i) {
-        return (a.i == b.i && a.t == b.t); // a.l == b.l && a.p == b.p
-    }
-
-    // how to retrieve the amount
-    CartHelper.prototype.getAmount = function (itm, i) {
-        return itm.a;
-    }
-
-
-
-
-
-
-
-
     // typeahead wrapper
     function TypeaheadWrapper($obj, callback) {
 
@@ -309,31 +185,87 @@ lotplan.utils = (function (jQuery) {
 
         return params;
     }
+	
+	/*
+	*Latitude\Longitude to DMS converter
+	*/
+	
+	function convertLatLngToDMS(lat, lng){
+		var deg, min
+		deg = parseInt(lng);
+		var result = {}
+		min = (lng - deg) * 60;
+		result.lng = deg + 'º ' + format('00', parseInt(min)) + "' " + format('00.0', (min - parseInt(min)) * 60) + "''";
+		deg = parseInt(lat);
+		min = (lat - deg) * 60;
+		result.lat = deg + 'º ' + format('00', parseInt(min)) + "' " + format('00.0', (min - parseInt(min)) * 60) + "''";
+		return result
+	}
+	
+	
+	function format(m, v){
+		if (!m || isNaN(+v)) {
+		  return v; //return as it is.
+		}
+		//convert any string to number according to formation sign.
+		var v = m.charAt(0) == '-' ? -v : +v;
+		var isNegative = v < 0 ? v = -v : 0; //process only abs(), and turn on flag.
 
-    /**
-     * Sets data as a named cookie with an expiry in minuites
-     */
-    function setCookie(name, value, mins) {
-        var d = new Date();
-        d.setTime(d.getTime() + (mins * 60 * 60 * 1000));
-        var expires = "expires=" + d.toUTCString();
-        document.cookie = name + "=" + value + "; " + expires;
-    }
+		//search for separator for grp & decimal, anything not digit, not +/- sign, not #.
+		var result = m.match(/[^\d\-\+#]/g);
+		var Decimal = (result && result[result.length - 1]) || '.'; //treat the right most symbol as decimal
+		var Group = (result && result[1] && result[0]) || ','; //treat the left most symbol as group separator
 
-    /**
-     * Returns the URL hash params as an object
-     * @returns cookie
-     */
-    function getCookie(name) {
-        var n = name + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) == ' ') c = c.substring(1);
-            if (c.indexOf(n) == 0) return c.substring(n.length, c.length);
-        }
-        return "";
-    }
+		//split the decimal for the format string if any.
+		var m = m.split(Decimal);
+		//Fix the decimal first, toFixed will auto fill trailing zero.
+		v = v.toFixed(m[1] && m[1].length);
+		v = +(v) + ''; //convert number to string to trim off *all* trailing decimal zero(es)
+
+		//fill back any trailing zero according to format
+		var pos_trail_zero = m[1] && m[1].lastIndexOf('0'); //look for last zero in format
+		var part = v.split('.');
+		//integer will get !part[1]
+		if (!part[1] || part[1] && part[1].length <= pos_trail_zero) {
+		  v = (+v).toFixed(pos_trail_zero + 1);
+		}
+		var szSep = m[0].split(Group); //look for separator
+		m[0] = szSep.join(''); //join back without separator for counting the pos of any leading 0.
+
+		var pos_lead_zero = m[0] && m[0].indexOf('0');
+		if (pos_lead_zero > -1) {
+		  while (part[0].length < (m[0].length - pos_lead_zero)) {
+			part[0] = '0' + part[0];
+		  }
+		} else if (+part[0] == 0) {
+		  part[0] = '';
+		}
+
+		v = v.split('.');
+		v[0] = part[0];
+
+		//process the first group separator from decimal (.) only, the rest ignore.
+		//get the length of the last slice of split result.
+		var pos_separator = (szSep[1] && szSep[szSep.length - 1].length);
+		if (pos_separator) {
+		  var integer = v[0];
+		  var str = '';
+		  var offset = integer.length % pos_separator;
+		  for (var i = 0, l = integer.length; i < l; i++) {
+
+			str += integer.charAt(i); //ie6 only support charAt for sz.
+			//-pos_separator so that won't trail separator on full length
+			if (!((i - offset + 1) % pos_separator) && i < l - pos_separator) {
+			  str += Group;
+			}
+		  }
+		  v[0] = str;
+		}
+
+		v[1] = (m[1] && v[1]) ? Decimal + v[1] : "";
+		return (isNegative ? '-' : '') + v[0] + v[1]; //put back any negation and combine integer and fraction.
+	}
+
 
     /**
      * Return public API
@@ -344,18 +276,11 @@ lotplan.utils = (function (jQuery) {
         multiAjaxRequest: multiAjaxRequest,
         getUrlParamsObject: getUrlParamsObject,
         ajaxRequest: ajaxRequest,
-
-        formatCurrency: formatCurrency,
-        setCookie: setCookie,
-        getCookie: getCookie,
+		convertLatLngToDMS: convertLatLngToDMS,
 
         TypeaheadWrapper: TypeaheadWrapper,
-        Validator: Validator,
-        Cart: CartHelper
-
+        Validator: Validator
     };
-
-
 
 })(jQuery);
 

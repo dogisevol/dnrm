@@ -15,12 +15,8 @@ lotplan.components.searchresults = (function(jQuery,ko) {
     var _self,
 		map,
 		markerGroup,
-        markers = [],
-        featureLayerUrl = "https://geospatial.information.qld.gov.au/ArcGIS/rest/services/QLD/LandParcelPropertyFramework/MapServer/4";
-        featureLayerUrl = "https://geospatial.information.qld.gov.au/ArcGIS/rest/services/QLD/LandParcelPropertyFramework/MapServer/4";
 		dynamicLayerUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",		
-		unselectedIcon = new L.Icon.Default({ iconUrl: "https://www.dnrm.qld.gov.au/?a=332335", shadowUrl: 'https://www.dnrm.qld.gov.au/?a=332701' } ),
-        selectedIcon = new L.Icon.Default({ iconUrl: "https://www.dnrm.qld.gov.au/?a=332681", shadowUrl: 'https://www.dnrm.qld.gov.au/?a=332701', } );
+        selectedIcon = new L.Icon.Default({ iconUrl: "images/marker-icon.png", shadowUrl: 'images/marker-shadow.png', } );
 
 
     /********************************************************************************** Lifecycle */
@@ -51,18 +47,26 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 			pointToLayer: function(feature, latlng){
 				
 				marker = L.marker(e.latlng, {
-					
-					title: "Resource Location",
-					alt: "Resource Location",
 					riseOnHover: true,
 					draggable: true,
-					icon: selectedIcon,
+					icon: selectedIcon
 
 				});
-				marker.bindPopup(marker.getLatLng() + "<br><center><a class='marker-delete-button'/>Remove marker</a></center>");
-				lotplan.main.getSelection().push({"marker": marker, "dms": latLngToDMS(marker.getLatLng())})
+				marker.dmsLat = ko.observable("")
+				marker.dmsLng = ko.observable("")
+				marker.setDms = function(dms){
+					this.dmsLat(dms.lat)
+					this.dmsLng(dms.lng)
+				}
+
+				marker.bindPopup(marker.getLatLng() + "<br><center><a class='marker-delete-button'/>Remove marker</a></center>");	
+				marker.setDms(lotplan.utils.convertLatLngToDMS(marker.getLatLng().lat, marker.getLatLng().lng))	
+					
+				lotplan.main.getSelection().push(marker)
 				marker.on("popupopen", onPopupOpen);
-			
+			    marker.on('dragend', function(e, marker) {					
+					this.setDms(lotplan.utils.convertLatLngToDMS(this.getLatLng().lat, this.getLatLng().lng))
+				});
 				return marker;
 			}
 		}).addTo(markerGroup);
@@ -87,104 +91,10 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 		map.removeLayer(marker);
 	}
 	
-	function latLngToDMS(latLng){
-      deg = parseInt(latLng.lng);
-	  var result = {}
-      min = (latLng.lng - deg) * 60;
-      result.lng = deg + 'º ' + format('00', parseInt(min)) + "' " + format('00.0', (min - parseInt(min)) * 60) + "''";
-      deg = parseInt(latLng.lat);
-      min = (latLng.lat - deg) * 60;
-      result.lat = deg + 'º ' + format('00', parseInt(min)) + "' " + format('00.0', (min - parseInt(min)) * 60) + "''";
-	  return result
-	}
-	
-	
-	function format(m, v){
-		    if (!m || isNaN(+v)) {
-      return v; //return as it is.
-    }
-    //convert any string to number according to formation sign.
-    var v = m.charAt(0) == '-' ? -v : +v;
-    var isNegative = v < 0 ? v = -v : 0; //process only abs(), and turn on flag.
-
-    //search for separator for grp & decimal, anything not digit, not +/- sign, not #.
-    var result = m.match(/[^\d\-\+#]/g);
-    var Decimal = (result && result[result.length - 1]) || '.'; //treat the right most symbol as decimal
-    var Group = (result && result[1] && result[0]) || ','; //treat the left most symbol as group separator
-
-    //split the decimal for the format string if any.
-    var m = m.split(Decimal);
-    //Fix the decimal first, toFixed will auto fill trailing zero.
-    v = v.toFixed(m[1] && m[1].length);
-    v = +(v) + ''; //convert number to string to trim off *all* trailing decimal zero(es)
-
-    //fill back any trailing zero according to format
-    var pos_trail_zero = m[1] && m[1].lastIndexOf('0'); //look for last zero in format
-    var part = v.split('.');
-    //integer will get !part[1]
-    if (!part[1] || part[1] && part[1].length <= pos_trail_zero) {
-      v = (+v).toFixed(pos_trail_zero + 1);
-    }
-    var szSep = m[0].split(Group); //look for separator
-    m[0] = szSep.join(''); //join back without separator for counting the pos of any leading 0.
-
-    var pos_lead_zero = m[0] && m[0].indexOf('0');
-    if (pos_lead_zero > -1) {
-      while (part[0].length < (m[0].length - pos_lead_zero)) {
-        part[0] = '0' + part[0];
-      }
-    } else if (+part[0] == 0) {
-      part[0] = '';
-    }
-
-    v = v.split('.');
-    v[0] = part[0];
-
-    //process the first group separator from decimal (.) only, the rest ignore.
-    //get the length of the last slice of split result.
-    var pos_separator = (szSep[1] && szSep[szSep.length - 1].length);
-    if (pos_separator) {
-      var integer = v[0];
-      var str = '';
-      var offset = integer.length % pos_separator;
-      for (var i = 0, l = integer.length; i < l; i++) {
-
-        str += integer.charAt(i); //ie6 only support charAt for sz.
-        //-pos_separator so that won't trail separator on full length
-        if (!((i - offset + 1) % pos_separator) && i < l - pos_separator) {
-          str += Group;
-        }
-      }
-      v[0] = str;
-    }
-
-    v[1] = (m[1] && v[1]) ? Decimal + v[1] : "";
-    return (isNegative ? '-' : '') + v[0] + v[1]; //put back any negation and combine integer and fraction.
-  }
-	
     function setupMap(){
-      map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
-        /*L.tileLayer('https://api{s}.nowwhere.com.au/1.1.2/tile/50/{z}/{x}/{y}/?key=oDYTVpCsmigGKoxiy7ZxyNpIasMjEcMelJqTyz1x', {
-            minZoom: 13,
-            maxZoom: 18,
-            attribution: 'Map data &copy; MapData Services',
-            subdomains: ['1', '2', '3', '4']
-        }).addTo(map);*/
-		
+		map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
 		L.esri.basemapLayer("Streets").addTo(map);
-		
-		/*L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-		}).addTo(map);*/
-		
-
-		/*L.esri.dynamicMapLayer({
-			url: "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",
-			opacity: 0.7
-		  }).addTo(map);*/
-		  
-
-		  L.esri.dynamicMapLayer({
+		L.esri.dynamicMapLayer({
 			url: dynamicLayerUrl,
 			opacity: 0.7,
 			dynamicLayers: [{
@@ -202,27 +112,19 @@ lotplan.components.searchresults = (function(jQuery,ko) {
 				 }
 				}]
 		  }).addTo(map);
-		  
+	lotplan.main.clearSelection()	  
 	markerGroup = L.layerGroup().addTo(map);
 	map.on('click', onMapClick);
 	
 
-	
-	
-      //clear markers
-      if (markers) {
-        for(i=0;i<markers.length;i++) { map.removeLayer(markers[i]); }
-      }
-
-      L.Icon.Default.imagePath = 'https://www.dnrm.qld.gov.au/';
+    L.Icon.Default.imagePath = 'image';
 
       var bounds = L.latLngBounds([]),
-          markers = [],
           searchData = lotplan.main.getSearchData()
         
 
       for (var i = 0; i < searchData().length; i++) {
-        var item = searchData()[i], attrs = item.attributes;
+        var item = searchData()[i]
                
         var marker;
 
@@ -252,80 +154,18 @@ lotplan.components.searchresults = (function(jQuery,ko) {
           }
 
           marker = L.marker(
-            [(bottomleft-topleft)/2, (topright-topleft)/2], 
-            { title: "Lot: " + attrs.LOT + " plan: " + attrs.PLAN, opacity: 1, icon: unselectedIcon }
-          );
+            [(bottomleft-topleft)/2, (topright-topleft)/2])
 
-        } else {
-        
+        } else {     
           marker = L.marker(
-            [item.geometry.y, item.geometry.x], 
-            { title: "Lot: " + attrs.LOT + " plan: " + attrs.PLAN, opacity: 1, icon: unselectedIcon }
-          );
+            [item.geometry.y, item.geometry.x])
         
         }
-
-        marker.on("click", function (e) {
-            var selectedData = lotplan.main.getSelectedData();
-            if(~selectedData.indexOf(e.target.lotdata)) {
-                selectedData.remove(e.target.lotdata);
-            } else {
-                selectedData.push(e.target.lotdata);
-            }
-
-        })
-        marker.lotdata = attrs;
-        markers.push(marker.addTo(map));
         bounds.extend(marker.getLatLng());
       }
       map.fitBounds(bounds);
-
-        // load feature layer after markers added to ensure minimal bounds
-        // also, we want actually show the layer, only the specific feature.
-        // maybe we could do this from the lotdata above as it is a lot of overhead to get the whole layer the specific address feature(s).
-      L.esri.featureLayer({ url: featureLayerUrl, 
-            style: {opacity: 0, weight: 1 },
-            onEachFeature: function (feature, layer) {
-
-                    layer.setStyle( { fill:false, color:"#000" } );
-
-                    for (var i = 0; i < searchData().length; i++) {
-                        if (feature.properties.LOT == searchData()[i].attributes.LOT && feature.properties.PLAN == searchData()[i].attributes.PLAN) {
-                        layer.setStyle( { fill:true, color:"red" } )
-                      }
-                    }
-
-            } 
-      }).addTo(map);
-
-
-      // subscribe to the selected data array
-      lotplan.main.getSelectedData().subscribe(function (newValue) {
-
-          // go get our products
-          if(newValue.length > 0) {
-              lotplan.main.setLotProduct(newValue[newValue.length - 1]);
-          }
-
-          //  manipulate the corresponding markers
-          for(var i = 0; i < markers.length; i++) {
-              markers[i].setIcon(~newValue.indexOf(markers[i].lotdata) ? selectedIcon : unselectedIcon);
-          }
-
-      });
-
-      //add click events to results table
-      eventBinding();
     }
 		
-
-    function eventBinding(){
-      jQuery('#results tbody td').on('click', function(e){
-        if(!jQuery(e.target).is('input')){
-          jQuery(e.target).parent().find('input').trigger('click');
-        }
-      });
-    }
 
     /********************************************************************************** View models */
 
