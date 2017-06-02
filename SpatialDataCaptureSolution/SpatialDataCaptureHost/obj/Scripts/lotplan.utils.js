@@ -134,6 +134,7 @@ lotplan.utils = (function (jQuery) {
 
     // typeahead wrapper
     function TypeaheadWrapper($obj, callback) {
+
         var delay = 200, req, ctrl, timer, abortRequest = function (r) {
             if (r && r.abort) { r.abort(); }
         };
@@ -145,6 +146,7 @@ lotplan.utils = (function (jQuery) {
             limit: 20
         }, {
             source: function (query, syncResults, asyncResults) {
+
                 if (timer) clearTimeout(timer);
                 abortRequest(req);
 

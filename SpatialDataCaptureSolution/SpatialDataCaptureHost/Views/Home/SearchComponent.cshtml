@@ -1,0 +1,58 @@
+﻿<form>
+    <DIV class="form-group">
+        <LABEL class="col-md-3" for="address">Address</LABEL>
+        <DIV class="col-md-9">
+            <INPUT type="text" class="form-control" id="address1"
+                   name="address" />
+        </DIV>
+        <LABEL class="col-md-3" for="lotplan">Address</LABEL>
+        <DIV class="col-md-9">
+            <INPUT type="text" class="form-control" id="lotplan1"
+                   name="lotplan" />
+        </DIV>
+        <LABEL class="col-md-3" for="address_multipoints">Address</LABEL>
+        <DIV class="col-md-9">
+            <INPUT type="text" class="form-control" id="address_multipoints1"
+                   name="address_multipoints" />
+        </DIV>
+        <LABEL class="col-md-3" for="lotplan_multipoints">Address</LABEL>
+        <DIV class="col-md-9">
+            <INPUT type="text" class="form-control" id="lotplan_multipoints1"
+                   name="lotplan_multipoints" />
+        </DIV>
+    </DIV>
+    <input type="submit" value="Download" onclick="saveTextAsFile()" />
+</form>
+<!--a href="data:' + data + '" download="data.json" id="download">Download</!-->
+
+<hr>
+<!-- ko template: { name: tmplOne, templateOptions: {myvar: 'apple'} } -->
+<div id="searchComponent" data-config="{id = 'myComponent1', input: {'address':'address1', 'lotplan':'lotplan1', address_multipoints:'address_multipoints1', 'lotplan_multipoints': 'lotplan_multipoints1'}" data-path='@Url.Content("~/Content/")'></div>
+<div id="searchComponent" data-config="{id = 'myComponent2', input: {'address':'address1', 'lotplan':'lotplan1', address_multipoints:'address_multipoints1', 'lotplan_multipoints': 'lotplan_multipoints1'}" data-path='@Url.Content("~/Content/")'></div>
+<script type="text/javascript" src="~/Scripts/searchComponent.js?@{@DateTime.Now.ToString()}"></script>
+
+<script type="text/javascript">
+    function saveTextAsFile() {
+        var textToWrite = "Address: " + $("#address1").val()
+        textToWrite += "<br>Multipoint: " + $("#address_multipoints1").val()
+        textToWrite += "<br>LotPlan: " + $("#lotplan1").val()
+        textToWrite += "<br>Multipoint: " + $("#lotplan_multipoints1").val()
+
+        var textFileAsBlob = new Blob([textToWrite], { type: 'text/html' });
+        var downloadLink = document.createElement("a");
+        downloadLink.download = "data.html";
+        if (window.webkitURL != null) {
+            downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+        }
+        else {
+            // Firefox requires the link to be added to the DOM
+            // before it can be clicked.
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+            downloadLink.onclick = destroyClickedElement;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+        }
+
+        downloadLink.click();
+    }
+</script>

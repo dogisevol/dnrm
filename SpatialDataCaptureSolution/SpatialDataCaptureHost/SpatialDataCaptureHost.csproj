@@ -190,6 +190,11 @@
     <Content Include="Content\images\loading.gif" />
     <Content Include="Content\images\marker-icon.png" />
     <Content Include="Content\images\marker-shadow.png" />
+    <Content Include="Content\templates\fishery\addressSearch.html" />
+    <Content Include="Content\templates\fishery\lotPlanSearch.html" />
+    <Content Include="Content\templates\fishery\searchComponent.html" />
+    <Content Include="Content\templates\fishery\searchResults.html" />
+    <Content Include="Content\templates\template.html" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -206,6 +211,8 @@
     <Content Include="Scripts\lib\typeahead.bundle.min.js" />
     <Content Include="Scripts\lotplan.main.js" />
     <Content Include="Scripts\lotplan.utils.js" />
+    <Content Include="Scripts\fisherySearchComponent.js" />
+    <Content Include="Scripts\searchComponent.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -251,6 +258,8 @@
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
     <Content Include="Scripts\components\lotplan.components.searchresults.js.orig" />
+    <Content Include="Views\Home\MapComponent1.cshtml" />
+    <Content Include="Views\Home\MapComponent.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
