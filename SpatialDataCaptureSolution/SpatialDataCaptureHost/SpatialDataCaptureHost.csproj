@@ -194,11 +194,15 @@
     <Content Include="Content\templates\fishery\lotPlanSearch.html" />
     <Content Include="Content\templates\fishery\searchComponent.html" />
     <Content Include="Content\templates\fishery\searchResults.html" />
+    <Content Include="Content\templates\searchComponent.html" />
     <Content Include="Content\templates\template.html" />
-    <Content Include="Content\templates\_searchComponent.js" />
+    <Content Include="Content\templates\_searchComponent.html" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <Content Include="images\loading.gif" />
+    <Content Include="images\marker-icon.png" />
+    <Content Include="images\marker-shadow.png" />
     <Content Include="Scripts\components\lotplan.components.addresssearchfields.js" />
     <Content Include="Scripts\components\lotplan.components.lotplansearchfields.js" />
     <Content Include="Scripts\components\lotplan.components.searchresults.js" />
@@ -261,6 +265,7 @@
     <Content Include="Scripts\components\lotplan.components.searchresults.js.orig" />
     <Content Include="Views\Home\MapComponent1.cshtml" />
     <Content Include="Views\Home\MapComponent.cshtml" />
+    <Content Include="Views\Home\SearchComponent.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

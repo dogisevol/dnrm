@@ -29,7 +29,6 @@ lotplan.components.searchresults = (function (jQuery, ko) {
 
     // Script for adding marker on map click
     function onMapClick(e) {
-        debugger
         var geojsonFeature = {
             "type": "Feature",
             "properties": {},
@@ -172,16 +171,24 @@ lotplan.components.searchresults = (function (jQuery, ko) {
 
         var points = lotplan.main.getAddressPoints() ? lotplan.main.getAddressPoints() : lotplan.main.getLotPlanPoints()
         if (points) {
-            /([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)/g.exec(points).forEach(function (point) {
-                debugger
+            reg = new RegExp(
+                "([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)", "g");
+            var point
+            while ((point = reg.exec(points)) !== null) {                
+                var a = point[0].split(',')
+                _self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
+            }
+
+
+            /([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)/g.exec(points).forEach(function (point) {                
                 var a = point.split(',')
-                //_self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
-                var latlngPoint = new L.LatLng(a[0], a[1]);
+                _self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
+                /*var latlngPoint = new L.LatLng(a[0], a[1]);
                 map.fireEvent('click', {
                     latlng: latlngPoint,
                     layerPoint: map.latLngToLayerPoint(latlngPoint),
                     containerPoint: map.latLngToContainerPoint(latlngPoint)
-                });
+                });*/
             })
         }
     }
