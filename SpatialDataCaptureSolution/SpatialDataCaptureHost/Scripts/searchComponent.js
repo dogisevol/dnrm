@@ -1,4 +1,274 @@
-﻿/* Lotplan - Search results component     *  * Search results are received from addresssearchfields or lotplansearch fields and results are displayed.  * A custom event is dispatched once results are displayed to tell the search elements to stop loading. */// Namespace detectionif (typeof (lotplan) !== "object") lotplan = {};if (typeof (lotplan.components) !== "object") lotplan.components = {};lotplan.components.searchresults = (function (jQuery, ko) {    var _self,        map,        markerGroup,        dynamicLayerUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",        selectedIcon = new L.Icon.Default({ iconUrl: "images/marker-icon.png", shadowUrl: 'images/marker-shadow.png', });    /********************************************************************************** Lifecycle */    /**     * Init      */    function setup() {    }    // Script for adding marker on map click    function onMapClick(e) {        var geojsonFeature = {            "type": "Feature",            "properties": {},            "geometry": {                "type": "Point",                "coordinates": [e.latlng.lat, e.latlng.lng]            }        }        var marker;        var markerGroup = L.layerGroup().addTo(map)        L.geoJson(geojsonFeature, {            pointToLayer: function (feature, latlng) {                marker = L.marker(e.latlng, {                    riseOnHover: true,                    draggable: true,                    icon: selectedIcon                });                marker.dmsLat = ko.observable("")                marker.dmsLat.subscribe(function () {                    lotplan.main.notifyParent()                })                marker.dmsLng = ko.observable("")                marker.dmsLng.subscribe(function () {                    lotplan.main.notifyParent()                })                marker.setDms = function (dms) {                    this.dmsLat(dms.lat)                    this.dmsLng(dms.lng)                }                marker.bindPopup(marker.getLatLng() + "<br><center><a class='marker-delete-button'/>Remove marker</a></center>");                marker.setDms(lotplan.utils.convertLatLngToDMS(marker.getLatLng().lat, marker.getLatLng().lng))                lotplan.main.getSelection().push(marker)                marker.on("popupopen", onPopupOpen);                marker.on('dragend', function (e, marker) {                    this.setDms(lotplan.utils.convertLatLngToDMS(this.getLatLng().lat, this.getLatLng().lng))                });                return marker;            }        }).addTo(markerGroup);    }    // Function to handle delete as well as other events on marker popup open    function onPopupOpen() {        var tempMarker = this;        //var tempMarkerGeoJSON = this.toGeoJSON();        //var lID = tempMarker._leaflet_id; // Getting Leaflet ID of this marker        // To remove marker on click of delete        $(".marker-delete-button:visible").click(function () {            lotplan.main.getSelection().remove(tempMarker)            map.removeLayer(tempMarker);        });    }    function removeMarker(marker) {        map.removeLayer(marker);    }    function setupMap() {        map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);        L.esri.basemapLayer("Streets").addTo(map);        L.esri.dynamicMapLayer({            url: dynamicLayerUrl,            opacity: 0.7,            dynamicLayers: [{                "id": 1,                "source": {                    "type": "mapLayer",                    "mapLayerId": 4                }            },            {                "id": 1000,                "source": {                    "type": "mapLayer",                    "mapLayerId": 0                }            }]        }).addTo(map);        lotplan.main.clearSelection()        markerGroup = L.layerGroup().addTo(map);        map.on('click', onMapClick);        L.Icon.Default.imagePath = 'image';        var bounds = L.latLngBounds([]),            searchData = lotplan.main.getSearchData()        for (var i = 0; i < searchData().length; i++) {            var item = searchData()[i]            var marker;            //is item's geometry a ring/polygon or a point?            if (item.geometry.rings) {                // get point in middle of poly via finding highest and lowest x and y values                var topleft, topright, bottomleft, bottomright;                for (var j in item.geometry.rings[0]) {                    if (j == 0) {                        topleft = item.geometry.rings[0][j][0];                        topright = item.geometry.rings[0][j][0];                        bottomleft = item.geometry.rings[0][j][1];                        bottomright = item.geometry.rings[0][j][1];                    }                    //detect and set topleft                    if (j > 0 && item.geometry.rings[0][j][0] < topleft) { topleft = item.geometry.rings[0][j][0]; }                    //detect and set  top right                    if (j > 0 && item.geometry.rings[0][j][0] > topright) { topright = item.geometry.rings[0][j][0]; }                    //detect and set  bottom left                    if (j > 0 && item.geometry.rings[0][j][1] < bottomleft) { bottomleft = item.geometry.rings[0][j][1]; }                    //detect and set  bottom right                    if (j > 0 && item.geometry.rings[0][j][1] > bottomright) { bottomright = item.geometry.rings[0][j][1]; }                }                marker = L.marker(                    [(bottomleft - topleft) / 2, (topright - topleft) / 2])            } else {                marker = L.marker(                    [item.geometry.y, item.geometry.x])            }            bounds.extend(marker.getLatLng());        }        map.fitBounds(bounds);    }    /********************************************************************************** View models */    /**     * View model     * @constructor     */    function viewModel(params) {        _self = this;        if (lotplan.main && lotplan.main.getSearchData() && lotplan.main.getSearchData()().length > 0) {            setupMap();        }    }    /**    * Public: Parse and set search data once it is received from other classes    */    function setSearchData(results) {        //parse search results and set them        if (results) {            var data = JSON.parse(results);            if (data.relatedRecordGroups && data.relatedRecordGroups.length > 0) {                data.features = data.relatedRecordGroups[0].relatedRecords;            }            if (data.features && data.features.length > 0) {                // add some defaults for our products on the way in                for (var i = 0; i < data.features.length; i++) {                    var item = data.features[i].attributes;                    item.LOT_TITLE = ko.observable("");                    item.LOT_VALID = ko.observable(false);                    item.PRODUCTS = ko.observableArray();                }                lotplan.main.getSearchData()(data.features);                setupMap();            } else {                this.isError(true);                lotplan.main.getSearchData()(false);            }        } else {            lotplan.main.getSearchData()(false);        }        //fire custom loading finished event          jQuery(document).trigger("loadingFinished");    }    /********************************************************************************** Private */    /**     * Return the component and public API     */    return {        // API        setup: setup,        setupMap: setupMap,        setSearchData: setSearchData,        removeMarker: removeMarker,        // Component        viewModel: viewModel,        template: { element: 'searchResults' },        synchronous: true    };})(jQuery, ko);/**
+﻿/* Lotplan - Search results component
+    * 
+ * Search results are received from addresssearchfields or lotplansearch fields and results are displayed. 
+ * A custom event is dispatched once results are displayed to tell the search elements to stop loading.
+ */
+
+// Namespace detection
+if (typeof (lotplan) !== "object") lotplan = {};
+if (typeof (lotplan.components) !== "object") lotplan.components = {};
+
+lotplan.components.searchresults = (function (jQuery, ko) {
+
+
+    var _self,
+        map,
+        markerGroup,
+        dynamicLayerUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",
+        selectedIcon = new L.Icon.Default({ iconUrl: "images/marker-icon.png", shadowUrl: 'images/marker-shadow.png', });
+
+
+    /********************************************************************************** Lifecycle */
+
+    /**
+     * Init 
+     */
+    function setup() {
+
+    }
+
+    // Script for adding marker on map click
+    function onMapClick(e) {
+        debugger
+        var geojsonFeature = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [e.latlng.lat, e.latlng.lng]
+            }
+        }
+
+        var marker;
+        var markerGroup = L.layerGroup().addTo(map)
+        L.geoJson(geojsonFeature, {
+
+            pointToLayer: function (feature, latlng) {
+
+                marker = L.marker(e.latlng, {
+                    riseOnHover: true,
+                    draggable: true,
+                    icon: selectedIcon
+
+                });
+                marker.dmsLat = ko.observable("")
+                marker.dmsLat.subscribe(function () {
+                    lotplan.main.notifyClient()
+                })
+                marker.dmsLng = ko.observable("")
+                marker.dmsLng.subscribe(function () {
+                    lotplan.main.notifyClient()
+                })
+                marker.setDms = function (dms) {
+                    this.dmsLat(dms.lat)
+                    this.dmsLng(dms.lng)
+                }
+
+                marker.bindPopup(marker.getLatLng() + "<br><center><a class='marker-delete-button'/>Remove marker</a></center>");
+                marker.setDms(lotplan.utils.convertLatLngToDMS(marker.getLatLng().lat, marker.getLatLng().lng))
+
+                lotplan.main.getSelection().push(marker)
+                marker.on("popupopen", onPopupOpen);
+                marker.on('dragend', function (e, marker) {
+                    this.setDms(lotplan.utils.convertLatLngToDMS(this.getLatLng().lat, this.getLatLng().lng))
+                });
+                return marker;
+            }
+        }).addTo(markerGroup);
+    }
+
+    // Function to handle delete as well as other events on marker popup open
+    function onPopupOpen() {
+        var tempMarker = this;
+
+        //var tempMarkerGeoJSON = this.toGeoJSON();
+
+        //var lID = tempMarker._leaflet_id; // Getting Leaflet ID of this marker
+
+        // To remove marker on click of delete
+        $(".marker-delete-button:visible").click(function () {
+            lotplan.main.getSelection().remove(tempMarker)
+            map.removeLayer(tempMarker);
+        });
+    }
+
+    function removeMarker(marker) {
+        map.removeLayer(marker);
+    }
+
+    function setupMap() {
+        map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
+        L.esri.basemapLayer("Streets").addTo(map);
+        L.esri.dynamicMapLayer({
+            url: dynamicLayerUrl,
+            opacity: 0.7,
+            dynamicLayers: [{
+                "id": 1,
+                "source": {
+                    "type": "mapLayer",
+                    "mapLayerId": 4
+                }
+            },
+            {
+                "id": 1000,
+                "source": {
+                    "type": "mapLayer",
+                    "mapLayerId": 0
+                }
+            }]
+        }).addTo(map);
+        lotplan.main.clearSelection()
+        markerGroup = L.layerGroup().addTo(map);
+        map.on('click', onMapClick);
+
+
+        L.Icon.Default.imagePath = 'image';
+
+        var bounds = L.latLngBounds([]),
+            searchData = lotplan.main.getSearchData()
+
+
+        for (var i = 0; i < searchData().length; i++) {
+            var item = searchData()[i]
+
+            var marker;
+
+            //is item's geometry a ring/polygon or a point?
+            if (item.geometry.rings) {
+
+                // get point in middle of poly via finding highest and lowest x and y values
+                var topleft, topright, bottomleft, bottomright;
+
+                for (var j in item.geometry.rings[0]) {
+                    if (j == 0) {
+                        topleft = item.geometry.rings[0][j][0];
+                        topright = item.geometry.rings[0][j][0];
+                        bottomleft = item.geometry.rings[0][j][1];
+                        bottomright = item.geometry.rings[0][j][1];
+                    }
+
+                    //detect and set topleft
+                    if (j > 0 && item.geometry.rings[0][j][0] < topleft) { topleft = item.geometry.rings[0][j][0]; }
+                    //detect and set  top right
+                    if (j > 0 && item.geometry.rings[0][j][0] > topright) { topright = item.geometry.rings[0][j][0]; }
+                    //detect and set  bottom left
+                    if (j > 0 && item.geometry.rings[0][j][1] < bottomleft) { bottomleft = item.geometry.rings[0][j][1]; }
+                    //detect and set  bottom right
+                    if (j > 0 && item.geometry.rings[0][j][1] > bottomright) { bottomright = item.geometry.rings[0][j][1]; }
+
+                }
+
+                marker = L.marker(
+                    [(bottomleft - topleft) / 2, (topright - topleft) / 2])
+
+            } else {
+                marker = L.marker(
+                    [item.geometry.y, item.geometry.x])
+
+            }
+            bounds.extend(marker.getLatLng());
+        }
+        map.fitBounds(bounds);
+
+        var points = lotplan.main.getAddressPoints() ? lotplan.main.getAddressPoints() : lotplan.main.getLotPlanPoints()
+        if (points) {
+            /([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)/g.exec(points).forEach(function (point) {
+                debugger
+                var a = point.split(',')
+                //_self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
+                var latlngPoint = new L.LatLng(a[0], a[1]);
+                map.fireEvent('click', {
+                    latlng: latlngPoint,
+                    layerPoint: map.latLngToLayerPoint(latlngPoint),
+                    containerPoint: map.latLngToContainerPoint(latlngPoint)
+                });
+            })
+        }
+    }
+
+    /**
+     * View model
+     * @constructor
+     */
+    function viewModel(params) {
+        _self = this;
+        _self.onMapClick = onMapClick
+        if (lotplan.main && lotplan.main.getSearchData() && lotplan.main.getSearchData()().length > 0) {
+            setupMap();
+        }
+    }
+
+
+
+
+
+    /**
+    * Public: Parse and set search data once it is received from other classes
+    */
+    function setSearchData(address, plan, lot, results) {
+        //parse search results and set them
+        if (results) {
+            var data = JSON.parse(results);
+
+            if (data.relatedRecordGroups && data.relatedRecordGroups.length > 0) {
+                data.features = data.relatedRecordGroups[0].relatedRecords;
+            }
+
+            if (data.features && data.features.length > 0) {
+                // add some defaults for our products on the way in
+                for (var i = 0; i < data.features.length; i++) {
+                    var item = data.features[i].attributes;
+                    item.LOT_TITLE = ko.observable("");
+                    item.LOT_VALID = ko.observable(false);
+                    item.PRODUCTS = ko.observableArray();
+                }
+                lotplan.main.getSearchData()(data.features);
+                setupMap();
+
+                if (address) {
+                    lotplan.main.setAddress(address)
+                } else {
+                    lotplan.main.setlotplan(lot, plan)
+                }
+            } else {
+                this.isError(true);
+                lotplan.main.getSearchData()(false);
+            }
+        } else {
+            lotplan.main.getSearchData()(false);
+        }
+
+        //fire custom loading finished event  
+        jQuery(document).trigger("loadingFinished");
+    }
+
+
+
+
+    /********************************************************************************** Private */
+
+    /**
+     * Return the component and public API
+     */
+    return {
+
+        // API
+        setup: setup,
+        setupMap: setupMap,
+        setSearchData: setSearchData,
+        removeMarker: removeMarker,
+
+        // Component
+        viewModel: viewModel,
+        template: { element: 'searchResults' },
+        synchronous: true
+    };
+
+
+})(jQuery, ko);
+
+
+/**
  * Lotplan - Address search fields component 
  * 
  * Fields:  A single address field that 
@@ -23,7 +293,7 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
      * Init 
      */
     function setup() {
-        var $typeahead = jQuery('#searchComponent_address_search_address'),
+        var $typeahead = jQuery('#address_search_address'),
             wrapper = new lotplan.utils.TypeaheadWrapper($typeahead, function (query, syncResults, asyncResults) {
 
                 _self.loading(true);
@@ -56,6 +326,14 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
         jQuery(document).on('loadingFinished', false, function (e) {
             _self.loading(false);
         });
+        var address = lotplan.main.getAddress()
+        if (address) {
+            _self.searchText(address)
+            $('#address_search_address').val(address)
+            _self.loading(true);
+            lotplan.main.clearData();
+            getAddressSearchResults(address);
+        }
 
     }
 
@@ -71,14 +349,14 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
         _self = this;
 
         //vars
-        _self.loading = ko.observable(false);
-        _self.addressValid = ko.observable(false);
-        _self.isError = ko.observable(false);
+        _self.loading = ko.observable(false)
+        _self.addressValid = ko.observable(false)
+        _self.isError = ko.observable(false)
 
         //register event handlers
-        _self.makeAddressSearch = makeAddressSearch;
-        _self.resetAddressSearch = resetAddressSearch;
-        _self.searchText = ko.observable('');
+        _self.makeAddressSearch = makeAddressSearch
+        _self.resetAddressSearch = resetAddressSearch
+        _self.searchText = ko.observable('')
     }
 
 
@@ -91,8 +369,8 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
         _self.loading(true);
         this.isError(false);
         lotplan.main.clearData();
-        _self.searchText(jQuery(vm).find('#searchComponent_address_search_address').val());
-        getAddressSearchResults(jQuery(vm).find('#searchComponent_address_search_address').val());
+        _self.searchText(jQuery(vm).find('#address_search_address').val());
+        getAddressSearchResults(jQuery(vm).find('#address_search_address').val());
     }
 
     /**
@@ -111,7 +389,7 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
      * Get search results
      */
     function getAddressSearchResults(searchtext) {
-        lotplan.utils.ajaxRequest(lotplanURL + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self));
+        lotplan.utils.ajaxRequest(lotplanURL + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, searchtext, null, null));
     }
 
 
@@ -123,10 +401,10 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
 
         // API
         setup: setup,
-
+        setSearchText: function (value) { _self.searchText(value) },
 
         // Component
-        setError: function (value) { _self.isError(value); },
+        setError: function (value) { _self.isError(value) },
         viewModel: viewModel,
         template: { element: 'addressSearchFields' },
         synchronous: true
@@ -236,12 +514,11 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
      * Results returned to searchresults component via callback
      */
     function getLotPlanSearchResults() {
-
         if (_self.searchPlan().match('BUP')) {
             //lotplan is of type BUP so it must poll 21 then 4 for object IDS then 0 for addresses
             lotplan.utils.ajaxRequest(lotplanbupURL + "BUP_LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (layer21results) {
                 if (layer21results && JSON.parse(layer21results).features.length > 0) {
-                    lotplan.utils.ajaxRequest(lotplanrelatedURL + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self))
+                    lotplan.utils.ajaxRequest(lotplanrelatedURL + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot()))
                 } else {
                     //no lot found
                     lotplan.components.searchresults.setSearchData.bind(null);
@@ -260,7 +537,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
                         }
                         objectIDs += "LOTPLAN+%3D+%27" + JSON.parse(results).features[j].attributes.LOTPLAN + "%27";
                     }
-                    lotplan.utils.ajaxRequest(addressURL + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self));
+                    lotplan.utils.ajaxRequest(addressURL + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot()));
                 } else {
                     //no lot found
                     lotplan.components.searchresults.setSearchData.bind(null);
@@ -316,14 +593,11 @@ lotplan.main = (function (jQuery, ko) {
     /********************************************************************************** Lifecycle */
 
     function constructor() {
-        var searchElement = $.find("#searchComponent")[0]
+        var searchElement = $.find("searchComponent")[0]
         _self.isLoading(true);
-        _self.componentId='myComponent'
-        var templatesPath = $(searchElement).attr("data-path")
-        _self.output = $(searchElement).attr("data-output")
-        lotplan.utils.ajaxRequest(encodeURIComponent(templatesPath + '/templates/searchComponent.html'), 'GET', null, function (data) {
-            if (data) {        
-                debugger
+        var templateFile = $(searchElement).attr("data-template-file")
+        lotplan.utils.ajaxRequest(encodeURIComponent(templateFile), 'GET', null, function (data) {
+            if (data) {
                 $(searchElement).html(_.template(data)(_self))
                 var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
                 var lotPlanElement = $(searchElement).find('lotplansearchfields')[0]
@@ -336,42 +610,24 @@ lotplan.main = (function (jQuery, ko) {
                 ko.components.register('addresssearchfields', lotplan.components.addresssearchfields);
                 ko.components.register('searchresults', lotplan.components.searchresults);
 
-                ko.applyBindings(_self, searchElement);
+
+                //custom binding to just handle initializing a value
+                ko.bindingHandlers.init = {
+                    init: function (element, valueAccessor) {
+                        var value = valueAccessor();
+                        if (ko.isObservable(value)) {
+                            value(element.value);
+                        }
+                    }
+                }
+
+                ko.applyBindings(_self, $(searchElement).parent()[0]);
                 postBinding();
             } else {
                 _self.isError(true);
                 _self.loading(false);
             }
         });
-        //$(searchElement).load(templatesPath + '/templates/searchComponent.html', function () {
-            //           var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
-            //            $(addressSearchElement).load(templatesPath + '/addressSearch.html', function () {
-            //                var lotPlanElement = $(searchElement).find('lotplansearchfields')[0]
-            //               $(lotPlanElement).load(templatesPath + '/lotPlanSearch.html', function () {
-            //                    var searchResultElement = $(searchElement).find('searchresults')[0]
-            //                    $(searchResultElement).load(templatesPath + '/searchResults.html', function () {
-            //debugger
-            //var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
-            //var lotPlanElement = $(searchElement).find('lotplansearchfields')[0]
-            //var searchResultElement = $(searchElement).find('searchresults')[0]
-            //_self.mapDiv = $(searchElement).find('div.map:first')[0]
-            //lotplan.components.lotplansearchfields.template.element = lotPlanElement
-            //lotplan.components.addresssearchfields.template.element = addressSearchElement
-            //lotplan.components.searchresults.template.element = searchResultElement
-            //ko.components.register('lotplansearchfields', lotplan.components.lotplansearchfields);
-            //ko.components.register('addresssearchfields', lotplan.components.addresssearchfields);
-            //ko.components.register('searchresults', lotplan.components.searchresults);
-
-            //ko.applyBindings(_self, searchElement);
-
-            //                   })
-            //               })
-            //         })
-          //  postBinding();
-      //  })
-
-        // Start post binding
-
     }
 
     /**
@@ -379,14 +635,6 @@ lotplan.main = (function (jQuery, ko) {
      * Actions occur after components and this VM are registered and created
      */
     function postBinding() {
-
-        // Watch for hashchange events
-        jQuery(window).on('hashchange', function () {
-            clearData(false, true, true);
-            lotplan.components.addresssearchfields.setup();
-            lotplan.components.lotplansearchfields.setup();
-        });
-
         // activate any tooltips
         jQuery(document).ready(function () {
             jQuery("body").tooltip({ selector: '[data-toggle=tooltip]' });
@@ -398,17 +646,13 @@ lotplan.main = (function (jQuery, ko) {
         lotplan.components.lotplansearchfields.setup();
 
         _self.id = decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("id").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-        notifyParent()
     }
 
-    function notifyParent() {
-        var output = $('#' + _self.output)
-        if (output.length && _self.selection().length > 0) {
-            var collection = []
-            _self.selection().forEach(function (marker) {
-                collection.push(marker.toGeoJSON())
-            })
-            $(output).val(JSON.stringify(collection, null, 2))
+    function notifyClient() {
+        if (_self.selection().length > 0) {
+            _self.addressPoints('MULTIPOINT(' + _self.selection().map(function (marker) {
+                return '(' + marker.getLatLng().lat + ', ' + marker.getLatLng().lng + ')'
+            }).join(', ') + ')')
         }
     }
 
@@ -429,15 +673,29 @@ lotplan.main = (function (jQuery, ko) {
 
         _self.selection = ko.observableArray()
         _self.selection.subscribe(function () {
-            notifyParent()
+            notifyClient()
         })
 
+        _self.address = ko.observable('')
+        _self.plan = ko.observable('')
+        _self.lot = ko.observable('')
+        _self.addressPoints = ko.observable('')
+        _self.lotplanPoints = ko.observable('')
 
         _self.errorText = ko.observable();
 
         _self.checkAllSearchData = checkAllSearchData;
         _self.clearSelection = clearSelection;
         _self.removeSelection = removeSelection;
+    }
+
+    function setAddress(address) {
+        _self.address(address)
+    }
+
+    function setLotPlan(lot, plan) {
+        _self.lot(lot)
+        _self.plan(plan)
     }
 
     function clearSelection() {
@@ -481,11 +739,17 @@ lotplan.main = (function (jQuery, ko) {
         constructor: constructor(),
         clearSelection: clearSelection,
         clearData: clearData,
-        notifyParent: notifyParent,
-        getMapElement: function () { return _self.mapDiv; },
-        getSearchData: function () { return _self.searchData; },
-        getSelectedData: function () { return _self.selectedData; },
-        getSelection: function () { return _self.selection; },
+        notifyClient: notifyClient,
+        setAddress: setAddress,
+        getAddress: function () { return _self.address() },
+        getAddressPoints: function () { return _self.addressPoints() },
+        setLotPlan: setLotPlan,
+        getLot: function () { return _self.lot() },
+        getPlan: function () { return _self.plan() },
+        getMapElement: function () { return _self.mapDiv },
+        getSearchData: function () { return _self.searchData },
+        getSelectedData: function () { return _self.selectedData },
+        getSelection: function () { return _self.selection },
 
     };
 

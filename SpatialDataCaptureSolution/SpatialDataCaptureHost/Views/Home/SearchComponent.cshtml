@@ -1,34 +1,37 @@
-﻿<form>
-    <DIV class="form-group">
-        <LABEL class="col-md-3" for="address">Address</LABEL>
-        <DIV class="col-md-9">
-            <INPUT type="text" class="form-control" id="address1"
-                   name="address" />
+﻿<div id="#searchComponent">
+    <form>
+        <DIV class="form-group">
+            <LABEL class="col-md-3" for="address">Address</LABEL>
+            <DIV class="col-md-9">
+                <INPUT type="text" class="form-control" data-bind="init:$root.address, value: $root.address"
+                       name="address" value="37 Boundary Street South Brisbane QLD (Brisbane City)" />
+            </DIV>
+            <LABEL class="col-md-3" for="lot">Lot</LABEL>
+            <DIV class="col-md-9">
+                <INPUT type="text" class="form-control" data-bind="init:$root.lot, value: $data.lot"
+                       name="lot" value="8" />
+            </DIV>
+            <LABEL class="col-md-3" for="plan">Plan</LABEL>
+            <DIV class="col-md-9">
+                <INPUT type="text" class="form-control" data-bind="init:$root.plan, value: $data.plan"
+                       name="lotplan" value="RP716599"/>
+            </DIV>
+            <LABEL class="col-md-3" for="address_multipoints">Address Points</LABEL>
+            <DIV class="col-md-9">
+                <INPUT type="text" class="form-control" data-bind="init:$root.addressPoints, value: $data.addressPoints"
+                       name="address_multipoints" value="MULTIPOINT((-27.47408507023781, 153.01496028900144), (-25.463114529259418, 139.19677734375))" />
+            </DIV>
+            <LABEL class="col-md-3" for="lotplan_multipoints">Lotplan points</LABEL>
+            <DIV class="col-md-9">
+                <INPUT type="text" class="form-control" data-bind="init:$root.lotplanPoints, value: $data.lotplanPoints"
+                       name="lotplan_multipoints" />
+            </DIV>
         </DIV>
-        <LABEL class="col-md-3" for="lotplan">Address</LABEL>
-        <DIV class="col-md-9">
-            <INPUT type="text" class="form-control" id="lotplan1"
-                   name="lotplan" />
-        </DIV>
-        <LABEL class="col-md-3" for="address_multipoints">Address</LABEL>
-        <DIV class="col-md-9">
-            <INPUT type="text" class="form-control" id="address_multipoints1"
-                   name="address_multipoints" />
-        </DIV>
-        <LABEL class="col-md-3" for="lotplan_multipoints">Address</LABEL>
-        <DIV class="col-md-9">
-            <INPUT type="text" class="form-control" id="lotplan_multipoints1"
-                   name="lotplan_multipoints" />
-        </DIV>
-    </DIV>
-    <input type="submit" value="Download" onclick="saveTextAsFile()" />
-</form>
-<!--a href="data:' + data + '" download="data.json" id="download">Download</!-->
-
-<hr>
-<!-- ko template: { name: tmplOne, templateOptions: {myvar: 'apple'} } -->
-<div id="searchComponent" data-config="{id = 'myComponent1', input: {'address':'address1', 'lotplan':'lotplan1', address_multipoints:'address_multipoints1', 'lotplan_multipoints': 'lotplan_multipoints1'}" data-path='@Url.Content("~/Content/")'></div>
-<div id="searchComponent" data-config="{id = 'myComponent2', input: {'address':'address1', 'lotplan':'lotplan1', address_multipoints:'address_multipoints1', 'lotplan_multipoints': 'lotplan_multipoints1'}" data-path='@Url.Content("~/Content/")'></div>
+        <input type="submit" value="Download" onclick="saveTextAsFile()" />
+    </form>
+    <hr>
+    <searchComponent data-template-file='@Url.Content("~/Content/templates/searchComponent.html")'></searchComponent>
+</div>
 <script type="text/javascript" src="~/Scripts/searchComponent.js?@{@DateTime.Now.ToString()}"></script>
 
 <script type="text/javascript">

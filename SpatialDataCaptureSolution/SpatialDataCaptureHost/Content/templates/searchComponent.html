@@ -1,19 +1,19 @@
-﻿<DIV id="<%=componentId%>">             
-		<DIV class="panel-group" class="search_accordian" id="<%=componentId%>_search_accordian" role="tablist" aria-multiselectable="false">
+﻿<DIV id="contents">             
+		<DIV class="panel-group search_accordian" id="search_accordian" role="tablist" aria-multiselectable="false">
 			<DIV class="panel panel-default">
-				<DIV class="panel-heading" id="<%= componentId%>_address_heading" role="tab" aria-expanded="true" aria-controls="<%= componentId%>_address_tab" href="#<%= componentId%>_address_tab" data-toggle="collapse" data-parent="<%= componentId%>_search_accordian">
+				<DIV class="panel-heading" id="address_heading" role="tab" aria-expanded="true" aria-controls="address_tab" href="#address_tab" data-toggle="collapse" data-parent="search_accordian">
 					<H4 class="panel-title">Search by address</H4>
 				</DIV>
-				<DIV class="panel-collapse collapse in" id="<%= componentId%>_address_tab" role="tabpanel" aria-LABELledby="<%= componentId%>_address_heading">
+				<DIV class="panel-collapse collapse in" id="address_tab" role="tabpanel" aria-LABELledby="address_heading">
 					<DIV class="panel-body">
 						<addresssearchfields params="">
 															<!-- Address search -->
-							<FORM class="form-horizontal" method="post" id="<%= componentId%>_address_search" data-bind="submit: $data.makeAddressSearch">
+							<FORM class="form-horizontal" method="post" id="address_search" data-bind="submit: $data.makeAddressSearch">
 								<DIV class="form-group">
-									<LABEL class="col-md-3" for="<%= componentId%>_address_search_address">Address</LABEL>
+									<LABEL class="col-md-3" for="address_search_address">Address</LABEL>
 									<DIV class="col-md-9">
-										<INPUT type="text" class="form-control" id="<%= componentId%>_address_search_address"
-											   name="<%= componentId%>_address_search_address" placeholder="Type an address" autocomplete="off" />
+										<INPUT type="text" class="form-control" id="address_search_address"
+											   name="address_search_address" placeholder="Type an address" autocomplete="off" />
 									</DIV>
 								</DIV>
 								<DIV class="form-group">
@@ -41,23 +41,23 @@
 				</DIV>
 			</DIV>
 			<DIV class="panel panel-default">
-				<DIV class="panel-heading collapsed" id="<%= componentId%>_plan_heading" role="tab" aria-expanded="true" aria-controls="<%= componentId%>_lot_plan_tab" href="#<%= componentId%>_lot_plan_tab" data-toggle="collapse" data-parent="#<%= componentId%>_search_accordian">
+				<DIV class="panel-heading collapsed" id="plan_heading" role="tab" aria-expanded="true" aria-controls="lot_plan_tab" href="#lot_plan_tab" data-toggle="collapse" data-parent="#search_accordian">
 					<H4 class="panel-title">Search by lot on plan</H4>
 				</DIV>
-				<DIV class="panel-collapse collapse" id="<%= componentId%>_lot_plan_tab" role="tabpanel" aria-LABELledby="<%= componentId%>_plan_heading">
+				<DIV class="panel-collapse collapse" id="lot_plan_tab" role="tabpanel" aria-LABELledby="plan_heading">
 					<DIV class="panel-body">
 						<lotplansearchfields params="">
-							<FORM class="form-horizontal" method="post" id="<%= componentId%>_lot_plan_search" data-bind="submit: $data.makeLotPlanSearch">
+							<FORM class="form-horizontal" method="post" id="lot_plan_search" data-bind="submit: $data.makeLotPlanSearch">
 								<DIV class="form-group">
 									<LABEL class="col-md-3" for="lot_plan_search_lotno">Lot number</LABEL>
 									<DIV class="col-md-9">
-										<INPUT type="text" class="form-control" id="<%= componentId%>_lot_plan_search_lotno" name="<%= componentId%>_lot_plan_search_lotno" placeholder="For example: 2" autocomplete="off"/>
+										<INPUT type="text" class="form-control" id="lot_plan_search_lotno" name="lot_plan_search_lotno" placeholder="For example: 2" autocomplete="off"/>
 									</DIV>
 								</DIV>
 								<DIV class="form-group">
 									<LABEL class="col-md-3" for="lot_plan_search_planno">Plan number</LABEL>
 									<DIV class="col-md-9">
-										<INPUT type="text" class="form-control" id="<%= componentId%>_lot_plan_search_planno" name="<%= componentId%>_lot_plan_search_planno" placeholder="For example: RP43986" autocomplete="off"/>
+										<INPUT type="text" class="form-control" id="lot_plan_search_planno" name="lot_plan_search_planno" placeholder="For example: RP43986" autocomplete="off"/>
 									</DIV>
 								</DIV>
 								<DIV class="form-group">
@@ -96,10 +96,9 @@
 					<THEAD>
 						<TR>
 							<TH> Latitude </TH>
-							<TH> Longitude </TH>
+							<TH> Longitude </TH> 
 							<TH><INPUT type="button" class="btn btn-success" value="Remove all" style="float:right" data-bind="click: $root.clearSelection "/></TH>
 						</TR>
-					</TR>
 					</THEAD>
 					<TBODY data-bind="foreach: $root.selection">
 						<TR>

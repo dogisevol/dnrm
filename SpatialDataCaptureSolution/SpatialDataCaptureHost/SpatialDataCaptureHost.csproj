@@ -195,6 +195,7 @@
     <Content Include="Content\templates\fishery\searchComponent.html" />
     <Content Include="Content\templates\fishery\searchResults.html" />
     <Content Include="Content\templates\template.html" />
+    <Content Include="Content\templates\_searchComponent.js" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
