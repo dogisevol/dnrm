@@ -169,7 +169,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
         }
         map.fitBounds(bounds);
 
-        var points = lotplan.main.getAddressPoints() ? lotplan.main.getAddressPoints() : lotplan.main.getLotPlanPoints()
+        var points = lotplan.main.getAddress() ? lotplan.main.getAddressPoints() : lotplan.main.getLotPlanPoints()
         if (points) {
             reg = new RegExp(
                 "([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)", "g");
@@ -177,19 +177,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
             while ((point = reg.exec(points)) !== null) {                
                 var a = point[0].split(',')
                 _self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
-            }
-
-
-            /([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)/g.exec(points).forEach(function (point) {                
-                var a = point.split(',')
-                _self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
-                /*var latlngPoint = new L.LatLng(a[0], a[1]);
-                map.fireEvent('click', {
-                    latlng: latlngPoint,
-                    layerPoint: map.latLngToLayerPoint(latlngPoint),
-                    containerPoint: map.latLngToContainerPoint(latlngPoint)
-                });*/
-            })
+            }        
         }
     }
 
@@ -235,7 +223,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
                 if (address) {
                     lotplan.main.setAddress(address)
                 } else {
-                    lotplan.main.setlotplan(lot, plan)
+                    lotplan.main.setLotPlan(lot, plan)
                 }
             } else {
                 this.isError(true);
@@ -341,7 +329,6 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
             lotplan.main.clearData();
             getAddressSearchResults(address);
         }
-
     }
 
     /********************************************************************************** View models */
@@ -453,6 +440,14 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
         jQuery(document).on('loadingFinished', false, function (e) {
             _self.loading(false);
         });
+        var lot = lotplan.main.getLot()
+        var plan = lotplan.main.getPlan()
+        if (lot && plan) {
+            _self.loading(true);
+            _self.searchLot(lot);
+            _self.searchPlan(plan.toUpperCase().trim());
+            getLotPlanSearchResults();
+        }
 
     }
 
@@ -687,7 +682,7 @@ lotplan.main = (function (jQuery, ko) {
         _self.plan = ko.observable('')
         _self.lot = ko.observable('')
         _self.addressPoints = ko.observable('')
-        _self.lotplanPoints = ko.observable('')
+        _self.lotPlanPoints = ko.observable('')
 
         _self.errorText = ko.observable();
 
@@ -750,6 +745,7 @@ lotplan.main = (function (jQuery, ko) {
         setAddress: setAddress,
         getAddress: function () { return _self.address() },
         getAddressPoints: function () { return _self.addressPoints() },
+        getLotPlanPoints: function () { return _self.lotPlanPoints() },
         setLotPlan: setLotPlan,
         getLot: function () { return _self.lot() },
         getPlan: function () { return _self.plan() },

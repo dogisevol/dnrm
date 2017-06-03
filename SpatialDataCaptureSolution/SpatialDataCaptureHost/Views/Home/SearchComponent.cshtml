@@ -4,7 +4,9 @@
             <LABEL class="col-md-3" for="address">Address</LABEL>
             <DIV class="col-md-9">
                 <INPUT type="text" class="form-control" data-bind="init:$root.address, value: $root.address"
-                       name="address" value="37 Boundary Street South Brisbane QLD (Brisbane City)" />
+                       name="address" value="" />
+                <!--INPUT type="text" class="form-control" data-bind="init:$root.address, value: $root.address"
+                       name="address" value="37 Boundary Street South Brisbane QLD (Brisbane City)" /-->
             </DIV>
             <LABEL class="col-md-3" for="lot">Lot</LABEL>
             <DIV class="col-md-9">
@@ -14,7 +16,7 @@
             <LABEL class="col-md-3" for="plan">Plan</LABEL>
             <DIV class="col-md-9">
                 <INPUT type="text" class="form-control" data-bind="init:$root.plan, value: $data.plan"
-                       name="lotplan" value="RP716599"/>
+                       name="lotplan" value="RP716599" />
             </DIV>
             <LABEL class="col-md-3" for="address_multipoints">Address Points</LABEL>
             <DIV class="col-md-9">
@@ -23,7 +25,7 @@
             </DIV>
             <LABEL class="col-md-3" for="lotplan_multipoints">Lotplan points</LABEL>
             <DIV class="col-md-9">
-                <INPUT type="text" class="form-control" data-bind="init:$root.lotplanPoints, value: $data.lotplanPoints"
+                <INPUT type="text" class="form-control" data-bind="init:$root.lotPlanPoints, value: $data.lotplanPoints"
                        name="lotplan_multipoints" />
             </DIV>
         </DIV>
@@ -31,6 +33,7 @@
     </form>
     <hr>
     <searchComponent data-template-file='@Url.Content("~/Content/templates/searchComponent.html")'></searchComponent>
+    <hr />
 </div>
 <script type="text/javascript" src="~/Scripts/searchComponent.js?@{@DateTime.Now.ToString()}"></script>
 
