@@ -325,6 +325,8 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
         if (address) {
             _self.searchText(address)
             $('#address_search_address').val(address)
+            $.find('#lot_plan_search_lotno').val('')
+            $.find('#lot_plan_search_planno').val('')
             _self.loading(true);
             lotplan.main.clearData();
             getAddressSearchResults(address);
@@ -443,6 +445,9 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
         var lot = lotplan.main.getLot()
         var plan = lotplan.main.getPlan()
         if (lot && plan) {
+            $('#address_search_address').val('')
+            $('#lot_plan_search_lotno').val(lot.trim())
+            $('#lot_plan_search_planno').val(plan.toUpperCase().trim())
             _self.loading(true);
             _self.searchLot(lot);
             _self.searchPlan(plan.toUpperCase().trim());
@@ -652,9 +657,14 @@ lotplan.main = (function (jQuery, ko) {
 
     function notifyClient() {
         if (_self.selection().length > 0) {
-            _self.addressPoints('MULTIPOINT(' + _self.selection().map(function (marker) {
+            var data = 'MULTIPOINT(' + _self.selection().map(function (marker) {
                 return '(' + marker.getLatLng().lat + ', ' + marker.getLatLng().lng + ')'
-            }).join(', ') + ')')
+            }).join(', ') + ')'
+
+            if (_self.address())
+                _self.addressPoints(data)
+            else if (_self.lot())
+                _self.lotPlanPoints(data)
         }
     }
 
