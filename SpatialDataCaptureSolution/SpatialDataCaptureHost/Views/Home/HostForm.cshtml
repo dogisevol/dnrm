@@ -18,24 +18,20 @@
                 <INPUT type="text" class="form-control" data-bind="init:$root.plan, value: $data.plan"
                        name="lotplan" value="RP716599" />
             </DIV>
-            <LABEL class="col-md-3" for="address_multipoints">Address Points</LABEL>
+            <LABEL class="col-md-3" for="points">Points</LABEL>
             <DIV class="col-md-9">
-                <INPUT type="text" class="form-control" data-bind="init:$root.addressPoints, value: $data.addressPoints"
-                       name="address_multipoints" value="MULTIPOINT((-27.47388755426465, 153.0130237340927), (-27.473642443588776, 153.01324903964996))" />
-            </DIV>
-            <LABEL class="col-md-3" for="lotplan_multipoints">Lotplan points</LABEL>
-            <DIV class="col-md-9">
-                <INPUT type="text" class="form-control" data-bind="init:$root.lotPlanPoints, value: $data.lotPlanPoints"
-                       name="lotplan_multipoints" value="MULTIPOINT((-19.298068311704792, 146.77623369862886), (-19.298220201712716, 146.7758260028586))"/>
+                <INPUT type="text" class="form-control" data-bind="init:$root.points, value: $data.points"
+                       name="points" value="MULTIPOINT((-19.298068311704792, 146.77623369862886), (-19.298220201712716, 146.7758260028586))" />
             </DIV>
         </DIV>
         <input type="submit" value="Download" onclick="saveTextAsFile()" />
     </form>
     <hr>
-    <searchComponent data-template-file='@Url.Content("~/Content/templates/searchComponent.html")'></searchComponent>
+    <!--Spatial data capture tool inserted as knockout component in host form-->
+    <spatialDataCaptureTool data-template-file='@Url.Content("~/Content/templates/SpatialDataCaptureTool.html")'></spatialDataCaptureTool>
     <hr />
 </div>
-<script type="text/javascript" src="~/Scripts/searchComponent.js?@{@DateTime.Now.ToString()}"></script>
+<script type="text/javascript" src="~/Scripts/SpatialDataCaptureTool.js?@{@DateTime.Now.ToString()}"></script>
 
 <script type="text/javascript">
     function saveTextAsFile() {
