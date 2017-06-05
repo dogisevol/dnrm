@@ -200,7 +200,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
     /**
     * Public: Parse and set search data once it is received from other classes
     */
-    function setSearchData(address, plan, lot, results) {
+    function setSearchData(address, plan, lot, isFirstSearch, results) {
         //parse search results and set them
         if (results) {
             var data = JSON.parse(results);
@@ -219,13 +219,16 @@ lotplan.components.searchresults = (function (jQuery, ko) {
                 }
                 lotplan.main.getSearchData()(data.features);
                 setupMap();
-
                 if (address) {
                     lotplan.main.setAddress(address)
                     lotplan.main.setLotPlan('', '')
                 } else {
                     lotplan.main.setLotPlan(lot, plan)
                     lotplan.main.setAddress('')
+                }
+                if (!isFirstSearch) {
+                    lotplan.main.setPoints('')
+                    lotplan.main.clearSelection()
                 }
             } else {
                 this.isError(true);
@@ -386,8 +389,8 @@ lotplan.components.addresssearchfields = (function (jQuery, ko) {
     /**
      * Get search results
      */
-    function getAddressSearchResults(searchtext) {
-        lotplan.utils.ajaxRequest(lotplanURL + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, searchtext, null, null));
+    function getAddressSearchResults(searchtext, isFirstSearch) {
+        lotplan.utils.ajaxRequest(lotplanURL + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, searchtext, null, isFirstSearch, null));
     }
 
 
@@ -453,7 +456,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
             _self.loading(true);
             _self.searchLot(lot);
             _self.searchPlan(plan.toUpperCase().trim());
-            getLotPlanSearchResults();
+            getLotPlanSearchResults(true);
         }
 
     }
@@ -522,12 +525,12 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
      * https://i.gyazo.com/fff82acc80212bb1f7a7f1e72a8f23cd.png
      * Results returned to searchresults component via callback
      */
-    function getLotPlanSearchResults() {
+    function getLotPlanSearchResults(isFirstSearch) {
         if (_self.searchPlan().match('BUP')) {
             //lotplan is of type BUP so it must poll 21 then 4 for object IDS then 0 for addresses
             lotplan.utils.ajaxRequest(lotplanbupURL + "BUP_LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (layer21results) {
                 if (layer21results && JSON.parse(layer21results).features.length > 0) {
-                    lotplan.utils.ajaxRequest(lotplanrelatedURL + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot()))
+                    lotplan.utils.ajaxRequest(lotplanrelatedURL + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch))
                 } else {
                     //no lot found
                     lotplan.components.searchresults.setSearchData.bind(null);
@@ -546,7 +549,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
                         }
                         objectIDs += "LOTPLAN+%3D+%27" + JSON.parse(results).features[j].attributes.LOTPLAN + "%27";
                     }
-                    lotplan.utils.ajaxRequest(addressURL + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot()));
+                    lotplan.utils.ajaxRequest(addressURL + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch));
                 } else {
                     //no lot found
                     lotplan.components.searchresults.setSearchData.bind(null);
@@ -750,6 +753,7 @@ lotplan.main = (function (jQuery, ko) {
     // clears data stores, defaults to all data
     function clearData(search, selected, products) {
         if ((search || search === undefined) && _self.searchData().length) _self.searchData.removeAll();
+        _self.removeAllPoints()
     }
 
 
@@ -764,6 +768,7 @@ lotplan.main = (function (jQuery, ko) {
         notifyClient: notifyClient,
         setAddress: setAddress,
         getAddress: function () { return _self.address() },
+        setPoints: function () {_self.points('') },
         getPoints: function () { return _self.points() },
         setLotPlan: setLotPlan,
         getLot: function () { return _self.lot() },

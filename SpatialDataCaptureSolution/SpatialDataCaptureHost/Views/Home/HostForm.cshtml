@@ -1,26 +1,27 @@
 ﻿<div id="#searchComponent">
+    <center><h1>Host form</h1></center>
     <form>
         <DIV class="form-group">
             <LABEL class="col-md-3" for="address">Address</LABEL>
             <DIV class="col-md-9">
                 <INPUT type="text" class="form-control" data-bind="init:$root.address, value: $root.address"
-                       name="address" value="" />
+                       id="address" name="address" value="" />
                 <!--INPUT type="text" class="form-control" data-bind="init:$root.address, value: $root.address"
                        name="address" value="37 Boundary Street South Brisbane QLD (Brisbane City)" /-->
             </DIV>
             <LABEL class="col-md-3" for="lot">Lot</LABEL>
             <DIV class="col-md-9">
                 <INPUT type="text" class="form-control" data-bind="init:$root.lot, value: $data.lot"
-                       name="lot" value="8" />
+                       name="lot" id="lot" value="8" />
             </DIV>
             <LABEL class="col-md-3" for="plan">Plan</LABEL>
             <DIV class="col-md-9">
                 <INPUT type="text" class="form-control" data-bind="init:$root.plan, value: $data.plan"
-                       name="lotplan" value="RP716599" />
+                       name="plan" id="plan" value="RP716599" />
             </DIV>
             <LABEL class="col-md-3" for="points">Points</LABEL>
             <DIV class="col-md-9">
-                <INPUT type="text" class="form-control" data-bind="init:$root.points, value: $data.points"
+                <INPUT type="text" id="points" class="form-control" data-bind="init:$root.points, value: $data.points"
                        name="points" value="MULTIPOINT((-19.298068311704792, 146.77623369862886), (-19.298220201712716, 146.7758260028586))" />
             </DIV>
         </DIV>
@@ -35,10 +36,10 @@
 
 <script type="text/javascript">
     function saveTextAsFile() {
-        var textToWrite = "Address: " + $("#address1").val()
-        textToWrite += "<br>Multipoint: " + $("#address_multipoints1").val()
-        textToWrite += "<br>LotPlan: " + $("#lotplan1").val()
-        textToWrite += "<br>Multipoint: " + $("#lotplan_multipoints1").val()
+        var textToWrite = "Address: " + $("#address").val()
+        textToWrite += "<br>Lot: " + $("#lot").val()
+        textToWrite += "<br>Plan: " + $("#plan").val()
+        textToWrite += "<br>Multipoint: " + $("#points").val()
 
         var textFileAsBlob = new Blob([textToWrite], { type: 'text/html' });
         var downloadLink = document.createElement("a");
