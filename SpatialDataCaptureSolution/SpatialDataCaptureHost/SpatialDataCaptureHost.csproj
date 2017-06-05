@@ -197,9 +197,6 @@
     <Content Include="images\loading.gif" />
     <Content Include="images\marker-icon.png" />
     <Content Include="images\marker-shadow.png" />
-    <Content Include="Scripts\components\lotplan.components.addresssearchfields.js" />
-    <Content Include="Scripts\components\lotplan.components.lotplansearchfields.js" />
-    <Content Include="Scripts\components\lotplan.components.searchresults.js" />
     <Content Include="Scripts\lib\bootstrap.min.js" />
     <Content Include="Scripts\lib\esri-leaflet.js" />
     <Content Include="Scripts\lib\iframeResizer.contentWindow.min.js" />
@@ -234,7 +231,6 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
     <Content Include="packages.config" />
     <None Include="Project_Readme.html" />
-    <Content Include="Scripts\components\lotplan.components.searchresults.js.orig" />
     <Content Include="Views\Home\HostForm.cshtml" />
   </ItemGroup>
   <PropertyGroup>
