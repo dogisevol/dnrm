@@ -655,7 +655,7 @@ lotplan.main = (function (jQuery, ko) {
         });
 
         // Set initial route
-        clearData(false, true, true);
+        clearData(false);
         lotplan.components.addresssearchfields.setup();
         lotplan.components.lotplansearchfields.setup();
 
@@ -751,9 +751,11 @@ lotplan.main = (function (jQuery, ko) {
     }
 
     // clears data stores, defaults to all data
-    function clearData(search, selected, products) {
-        if ((search || search === undefined) && _self.searchData().length) _self.searchData.removeAll();
-        _self.removeAllPoints()
+    function clearData(search) {
+        if ((search || search === undefined) && _self.searchData().length) {
+            _self.searchData.removeAll()
+            _self.points('')
+        }
     }
 
 
