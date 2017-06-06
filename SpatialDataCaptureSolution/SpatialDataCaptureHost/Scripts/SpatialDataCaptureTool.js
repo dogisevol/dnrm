@@ -1,6 +1,4 @@
-﻿if (typeof (lotplan) !== "object") lotplan = {};
-if (typeof (lotplan.components) !== "object") lotplan.components = {};
-
+﻿if (typeof (captureTool) !== "object") captureTool = {};
 
 /**
 * @param baseMap -  is used to display Esri hosted basemaps and attributes data providers appropriately
@@ -11,19 +9,18 @@ if (typeof (lotplan.components) !== "object") lotplan.components = {};
 * @param lotplanbupURL - Address map URL returns OBJECTID of BUP (building unit plan) lot and plan number
 * @param lotplanrelatedURL - Address map URL returns map at location of interest coordinates based on OBJECTID of BUP
 */
-lotplan.components.configuration = (function () {
+captureTool.configuration = (function () {
     _self = this
     _self.baseMap = "Streets"
 
     _self.addressTypeAheadURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&outFields=ADDRESS&f=json&where=",
     _self.addressURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&where=",
     //_self.operationalMap = "https://gisservices.information.qld.gov.au/arcgis/rest/services/Boundaries/MiningAdministrativeAreas/MapServer",
-        _self.operationalMap = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",
+     _self.operationalMap = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",
     _self.lotplanMapURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
     _self.lotplanURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/4/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
     _self.lotplanbupURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
     _self.lotplanrelatedURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/queryRelatedRecords?relationshipId=1&outFields=*&definitionExpression=&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnZ=false&returnM=false&gdbVersion=&f=json&objectIds=";
-
 
     _self.dynamicLayers = [{
         "id": 1,
@@ -54,14 +51,11 @@ lotplan.components.configuration = (function () {
     }
 })();
 
-
-lotplan.components.searchresults = (function (jQuery, ko) {
-
-
+captureTool.searchresults = (function (jQuery, ko) {
     var _self,
         map,
         markerGroup,
-        selectedIcon = new L.Icon.Default({ iconUrl: "marker-icon.png", shadowUrl: 'marker-shadow.png', });
+        selectedIcon = new L.Icon.Default({ iconUrl: "spct-marker-icon.png", shadowUrl: 'spct-marker-shadow.png', });
 
     function onMapClick(e) {
         var geojsonFeature = {
@@ -87,11 +81,11 @@ lotplan.components.searchresults = (function (jQuery, ko) {
                 });
                 marker.dmsLat = ko.observable("")
                 marker.dmsLat.subscribe(function () {
-                    lotplan.main.notifyClient()
+                    captureTool.main.notifyClient()
                 })
                 marker.dmsLng = ko.observable("")
                 marker.dmsLng.subscribe(function () {
-                    lotplan.main.notifyClient()
+                    captureTool.main.notifyClient()
                 })
                 marker.setDms = function (dms) {
                     this.dmsLat(dms.lat)
@@ -99,12 +93,12 @@ lotplan.components.searchresults = (function (jQuery, ko) {
                 }
 
                 marker.bindPopup(marker.getLatLng() + "<br><center><a class='marker-delete-button'/>Remove marker</a></center>");
-                marker.setDms(lotplan.utils.convertLatLngToDMS(marker.getLatLng().lat, marker.getLatLng().lng))
+                marker.setDms(captureToolUtils.convertLatLngToDMS(marker.getLatLng().lat, marker.getLatLng().lng))
 
-                lotplan.main.getSelection().push(marker)
+                captureTool.main.getSelection().push(marker)
                 marker.on("popupopen", onPopupOpen);
                 marker.on('dragend', function (e, marker) {
-                    this.setDms(lotplan.utils.convertLatLngToDMS(this.getLatLng().lat, this.getLatLng().lng))
+                    this.setDms(captureToolUtils.convertLatLngToDMS(this.getLatLng().lat, this.getLatLng().lng))
                 });
                 return marker;
             }
@@ -114,7 +108,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
     function onPopupOpen() {
         var tempMarker = this;
         $(".marker-delete-button:visible").click(function () {
-            lotplan.main.getSelection().remove(tempMarker)
+            captureTool.main.getSelection().remove(tempMarker)
             map.removeLayer(tempMarker);
         });
     }
@@ -125,13 +119,13 @@ lotplan.components.searchresults = (function (jQuery, ko) {
 
     function setupMap() {
         map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
-        L.esri.basemapLayer(lotplan.components.configuration.getBaseMap()).addTo(map);
+        L.esri.basemapLayer(captureTool.configuration.getBaseMap()).addTo(map);
         L.esri.dynamicMapLayer({
-            url: lotplan.components.configuration.getOperationalMap(),
+            url: captureTool.configuration.getOperationalMap(),
             opacity: 0.7,
-            dynamicLayers: lotplan.components.configuration.getDynamicLayers()
+            dynamicLayers: captureTool.configuration.getDynamicLayers()
         }).addTo(map);
-        lotplan.main.clearSelection()
+        captureTool.main.clearSelection()
         markerGroup = L.layerGroup().addTo(map);
         map.on('click', onMapClick);
 
@@ -139,7 +133,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
         L.Icon.Default.imagePath = 'images/';
 
         var bounds = L.latLngBounds([]),
-            searchData = lotplan.main.getSearchData()
+            searchData = captureTool.main.getSearchData()
 
 
         for (var i = 0; i < searchData().length; i++) {
@@ -183,7 +177,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
             bounds.extend(marker.getLatLng());
         }
         map.fitBounds(bounds);
-        var points = lotplan.main.getPoints()
+        var points = captureTool.main.getPoints()
         if (points) {
             reg = new RegExp(
                 "([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)", "g");
@@ -202,7 +196,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
     function viewModel(params) {
         _self = this;
         _self.onMapClick = onMapClick
-        if (lotplan.main && lotplan.main.getSearchData() && lotplan.main.getSearchData()().length > 0) {
+        if (captureTool.main && captureTool.main.getSearchData() && captureTool.main.getSearchData()().length > 0) {
             setupMap();
         }
     }
@@ -231,25 +225,25 @@ lotplan.components.searchresults = (function (jQuery, ko) {
                     item.LOT_VALID = ko.observable(false);
                     item.PRODUCTS = ko.observableArray();
                 }
-                lotplan.main.getSearchData()(data.features);
+                captureTool.main.getSearchData()(data.features);
                 setupMap();
                 if (address) {
-                    lotplan.main.setAddress(address)
-                    lotplan.main.setLotPlan('', '')
+                    captureTool.main.setAddress(address)
+                    captureTool.main.setLotPlan('', '')
                 } else {
-                    lotplan.main.setLotPlan(lot, plan)
-                    lotplan.main.setAddress('')
+                    captureTool.main.setLotPlan(lot, plan)
+                    captureTool.main.setAddress('')
                 }
                 if (!isFirstSearch) {
-                    lotplan.main.setPoints('')
-                    lotplan.main.clearSelection()
+                    captureTool.main.setPoints('')
+                    captureTool.main.clearSelection()
                 }
             } else {
                 this.isError(true);
-                lotplan.main.getSearchData()(false);
+                captureTool.main.getSearchData()(false);
             }
         } else {
-            lotplan.main.getSearchData()(false);
+            captureTool.main.getSearchData()(false);
         }
 
         //fire custom loading finished event  
@@ -275,17 +269,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
 })(jQuery, ko);
 
 
-/**
- * Lotplan - Address search fields component 
- * 
- * Fields:  A single address field that 
- */
-
-// Namespace detection
-if (typeof (lotplan) !== "object") lotplan = {};
-if (typeof (lotplan.components) !== "object") lotplan.components = {};
-
-lotplan.components.addressService = (function (jQuery, ko) {
+captureTool.addressService = (function (jQuery, ko) {
 
 
     var _self;
@@ -299,10 +283,10 @@ lotplan.components.addressService = (function (jQuery, ko) {
      */
     function setup() {
         var $typeahead = jQuery('#address_search_address'),
-            wrapper = new lotplan.utils.TypeaheadWrapper($typeahead, function (query, syncResults, asyncResults) {
+            wrapper = new captureToolUtils.TypeaheadWrapper($typeahead, function (query, syncResults, asyncResults) {
 
                 _self.loading(true);
-                var addrUrl = lotplan.components.configuration.getAddressTypeAheadURL() + encodeURIComponent("LOWER(ADDRESS) like '" + query.toLowerCase().trim() + "%'");
+                var addrUrl = captureTool.configuration.getAddressTypeAheadURL() + encodeURIComponent("LOWER(ADDRESS) like '" + query.toLowerCase().trim() + "%'");
 
                 return jQuery.get(addrUrl, null, function (data) {
 
@@ -331,7 +315,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
         jQuery(document).on('loadingFinished', false, function (e) {
             _self.loading(false);
         });
-        var address = lotplan.main.getAddress()
+        var address = captureTool.main.getAddress()
         if (address) {
             _self.searchText(address)
             $('#address_search_address').val(address)
@@ -373,7 +357,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
     function makeAddressSearch(vm, event) {
         _self.loading(true);
         this.isError(false);
-        lotplan.main.clearData();
+        captureTool.main.clearData();
         _self.searchText(jQuery(vm).find('#address_search_address').val());
         getAddressSearchResults(jQuery(vm).find('#address_search_address').val());
     }
@@ -384,7 +368,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
     function resetAddressSearch(vm, event) {
         jQuery(event.target).closest('form').find('input[type="text"]').val('');
         this.isError(false);
-        lotplan.main.clearData();
+        captureTool.main.clearData();
     }
 
 
@@ -394,7 +378,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
      * Get search results
      */
     function getAddressSearchResults(searchtext, isFirstSearch) {
-        lotplan.utils.ajaxRequest(lotplan.components.configuration.getAddressURL() + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, searchtext, null, null, isFirstSearch));
+        captureToolUtils.ajaxRequest(captureTool.configuration.getAddressURL() + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, captureTool.searchresults.setSearchData.bind(_self, searchtext, null, null, isFirstSearch));
     }
 
 
@@ -418,17 +402,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
 
 })(jQuery, ko);
 
-/**
- * Lotplan - lotplan search fields component 
- * 
- * Fields:  A lot and a plan number.
- */
-
-// Namespace detection
-if (typeof (lotplan) !== "object") lotplan = {};
-if (typeof (lotplan.components) !== "object") lotplan.components = {};
-
-lotplan.components.lotplansearchfields = (function (jQuery, ko) {
+captureTool.lotplansearchfields = (function (jQuery, ko) {
 
 
     var _self;
@@ -446,8 +420,8 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
         jQuery(document).on('loadingFinished', false, function (e) {
             _self.loading(false);
         });
-        var lot = lotplan.main.getLot()
-        var plan = lotplan.main.getPlan()
+        var lot = captureTool.main.getLot()
+        var plan = captureTool.main.getPlan()
         if (lot && plan) {
             $('#address_search_address').val('')
             $('#lot_plan_search_lotno').val(lot.trim())
@@ -494,7 +468,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
     function makeLotPlanSearch(vm, event) {
         _self.loading(true);
         this.isError(false);
-        lotplan.main.clearData();
+        captureTool.main.clearData();
         _self.searchLot(jQuery(vm).find('#lot_plan_search_lotno').val().trim());
         _self.searchPlan(jQuery(vm).find('#lot_plan_search_planno').val().toUpperCase().trim());
 
@@ -512,7 +486,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
     function resetLotPlanSearch(vm, event) {
         jQuery(event.target).closest('form').find('input[type="text"]').val('');
         this.isError(false);
-        lotplan.main.clearData();
+        captureTool.main.clearData();
     }
 
 
@@ -527,19 +501,19 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
     function getLotPlanSearchResults(isFirstSearch) {
         if (_self.searchPlan().match('BUP')) {
             //lotplan is of type BUP so it must poll 21 then 4 for object IDS then 0 for addresses
-            lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanbupURL() + "BUP_LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (layer21results) {
+            captureToolUtils.ajaxRequest(captureTool.configuration.getLotplanbupURL() + "BUP_LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (layer21results) {
                 if (layer21results && JSON.parse(layer21results).features.length > 0) {
-                    lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanrelatedURL() + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch))
+                    captureToolUtils.ajaxRequest(captureTool.configuration.getLotplanrelatedURL() + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, captureTool.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch))
                 } else {
                     //no lot found
-                    lotplan.components.searchresults.setSearchData.bind(null);
+                    captureTool.searchresults.setSearchData.bind(null);
                     _self.isError(true);
                     _self.loading(false);
                 }
             });
         } else {
             //a non BUP lotplan should search layer 4
-            lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanURL() + "LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (results) {
+            captureToolUtils.ajaxRequest(captureTool.configuration.getLotplanURL() + "LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (results) {
                 if (JSON.parse(results).features.length > 0) {
                     var objectIDs = "";
                     for (var j in JSON.parse(results).features) {
@@ -548,10 +522,10 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
                         }
                         objectIDs += "LOTPLAN+%3D+%27" + JSON.parse(results).features[j].attributes.LOTPLAN + "%27";
                     }
-                    lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanMapURL() + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch));
+                    captureToolUtils.ajaxRequest(captureTool.configuration.getLotplanMapURL() + objectIDs, 'GET', null, captureTool.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch));
                 } else {
                     //no lot found
-                    lotplan.components.searchresults.setSearchData.bind(null);
+                    captureTool.searchresults.setSearchData.bind(null);
                     _self.isError(true);
                     _self.loading(false);
                 }
@@ -581,16 +555,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
 
 })(jQuery, ko);
 
-
-/**
- * Lotplan - Address search fields component 
- * 
- * Fields:  A single address field that 
- */
-
-if (typeof (lotplan) !== "object") lotplan = {};
-
-lotplan.main = (function (jQuery, ko) {
+captureTool.main = (function (jQuery, ko) {
 
     'use strict';
 
@@ -602,19 +567,19 @@ lotplan.main = (function (jQuery, ko) {
         var templateFile = $(searchElement).attr("data-template-file")
         if (!templateFile)
             templateFile = "Content/templates/SpatialDataCaptureTool.html"
-        lotplan.utils.ajaxRequest(encodeURIComponent(templateFile) + '?90', 'GET', null, function (data) {
+        captureToolUtils.ajaxRequest(encodeURIComponent(templateFile) + '?90', 'GET', null, function (data) {
             if (data) {
                 $(searchElement).html(_.template(data)(_self))
                 var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
                 var lotPlanElement = $(searchElement).find('lotplansearchfields')[0]
                 var searchResultElement = $(searchElement).find('searchresults')[0]
                 _self.mapDiv = $(searchElement).find('div.map:first')[0]
-                lotplan.components.lotplansearchfields.template.element = lotPlanElement
-                lotplan.components.addressService.template.element = addressSearchElement
-                lotplan.components.searchresults.template.element = searchResultElement
-                ko.components.register('lotplansearchfields', lotplan.components.lotplansearchfields);
-                ko.components.register('addresssearchfields', lotplan.components.addressService);
-                ko.components.register('searchresults', lotplan.components.searchresults);
+                captureTool.lotplansearchfields.template.element = lotPlanElement
+                captureTool.addressService.template.element = addressSearchElement
+                captureTool.searchresults.template.element = searchResultElement
+                ko.components.register('lotplansearchfields', captureTool.lotplansearchfields);
+                ko.components.register('addresssearchfields', captureTool.addressService);
+                ko.components.register('searchresults', captureTool.searchresults);
 
 
                 //custom binding to just handle initializing a value
@@ -643,8 +608,8 @@ lotplan.main = (function (jQuery, ko) {
     function postBinding() {
         // Set initial route
         clearData(false);
-        lotplan.components.addressService.setup();
-        lotplan.components.lotplansearchfields.setup();
+        captureTool.addressService.setup();
+        captureTool.lotplansearchfields.setup();
 
         //        _self.id = decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("id").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
     }
@@ -711,18 +676,17 @@ lotplan.main = (function (jQuery, ko) {
 
     function clearSelection() {
         _self.selection().forEach(function (selection) {
-            lotplan.components.searchresults.removeMarker(selection)
+            captureTool.searchresults.removeMarker(selection)
         });
         _self.selection.removeAll();
     }
 
     function removeSelection() {
-        lotplan.components.searchresults.removeMarker(this)
+        captureTool.searchresults.removeMarker(this)
         _self.selection.remove(this);
     }
 
     function checkAllSearchData(vm, e) {
-
         // first remove all items from our selection
         _self.selectedData.removeAll();
 
@@ -732,9 +696,7 @@ lotplan.main = (function (jQuery, ko) {
                 _self.selectedData.push(_self.searchData()[i].attributes);
             }
         }
-
         return true;
-
     }
 
     // clears data stores, defaults to all data
@@ -744,7 +706,6 @@ lotplan.main = (function (jQuery, ko) {
             _self.points('')
         }
     }
-
 
     /**
      * Return public API
@@ -768,9 +729,5 @@ lotplan.main = (function (jQuery, ko) {
         getSelection: function () { return _self.selection },
 
     };
-
-
-
-
 })(jQuery, ko);
 

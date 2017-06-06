@@ -1,10 +1,6 @@
-/**
- Lot Plan Utilities
- **/
+if (captureToolUtils === undefined) var captureToolUtils = {};
 
-if (lotplan === undefined) var lotplan = {};
-
-lotplan.utils = (function (jQuery) {
+captureToolUtils = (function (jQuery) {
 
 
     'use strict';
@@ -280,5 +276,3 @@ lotplan.utils = (function (jQuery) {
     };
 
 })(jQuery);
-
-
