@@ -1,5 +1,11 @@
 ﻿if (typeof (captureTool) !== "object") captureTool = {};
 
+/*
+    Search for the following text to see the visible knockout observable tool fields available for host field binding:
+    
+        Visible tool fields for host field binding - START
+*/
+
 /**
 * @param baseMap -  is used to display Esri hosted basemaps and attributes data providers appropriately
 * @param addressTypeAheadURL - Address Lookup Service URL returning list of addresses
@@ -50,6 +56,185 @@ captureTool.configuration = (function () {
         getBaseMap: function () { return _self.baseMap }
     }
 })();
+
+captureTool.main = (function (jQuery, ko) {
+
+    'use strict';
+
+    var _self = new vmMain()
+
+    function vmMain() {
+        _self = this;
+
+        //page routing
+        _self.isLoading = ko.observable();
+
+        // data selected for review / product selection
+        _self.selectedData = ko.observableArray();
+
+        // data returned from a search
+        _self.searchData = ko.observableArray();
+
+        _self.selection = ko.observableArray()
+        _self.selection.subscribe(function () {
+            notifyClient()
+        })
+        /*
+        * ===================================================
+        * Visible tool fields for host field binding - START
+        * ===================================================
+        */
+        _self.address = ko.observable('')
+        _self.plan = ko.observable('')
+        _self.lot = ko.observable('')
+        _self.points = ko.observable('')
+        /*
+        * ===================================================
+        * Visible tool fields for host field binding - END
+        * ===================================================
+        */
+        _self.errorText = ko.observable();
+
+        _self.checkAllSearchData = checkAllSearchData;
+        _self.clearSelection = clearSelection;
+        _self.removeAllPoints = removeAllPoints
+        _self.removeSelection = removeSelection;
+    }
+
+
+    function constructor() {
+        var searchElement = $.find("spatialDataCaptureTool")[0]
+        _self.isLoading(true);
+        var templateFile = $(searchElement).attr("data-template-file")
+        if (!templateFile)
+            templateFile = "Content/templates/SpatialDataCaptureTool.html"
+        captureToolUtils.ajaxRequest(encodeURIComponent(templateFile) + '?90', 'GET', null, function (data) {
+            if (data) {
+                $(searchElement).html(_.template(data)(_self))
+                var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
+                var lotPlanElement = $(searchElement).find('lotplansearchfields')[0]
+                var searchResultElement = $(searchElement).find('searchresults')[0]
+                _self.mapDiv = $(searchElement).find('div.map:first')[0]
+                captureTool.lotplansearchfields.template.element = lotPlanElement
+                captureTool.addressService.template.element = addressSearchElement
+                captureTool.searchresults.template.element = searchResultElement
+                ko.components.register('lotplansearchfields', captureTool.lotplansearchfields);
+                ko.components.register('addresssearchfields', captureTool.addressService);
+                ko.components.register('searchresults', captureTool.searchresults);
+
+
+                //custom binding to just handle initializing a value
+                ko.bindingHandlers.init = {
+                    init: function (element, valueAccessor) {
+                        var value = valueAccessor();
+                        if (ko.isObservable(value)) {
+                            value(element.value);
+                        }
+                    }
+                }
+
+                ko.applyBindings(_self, $(searchElement).parent()[0]);
+                postBinding();
+            } else {
+                _self.isError(true);
+                _self.loading(false);
+            }
+        });
+    }
+
+    /**
+     * Post binding
+     * Actions occur after components and this VM are registered and created
+     */
+    function postBinding() {
+        // Set initial route
+        clearData(false);
+        captureTool.addressService.setup();
+        captureTool.lotplansearchfields.setup();
+
+        //        _self.id = decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("id").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+    }
+
+    function notifyClient() {
+        if (_self.selection().length > 0) {
+            var data = 'MULTIPOINT(' + _self.selection().map(function (marker) {
+                return '(' + marker.getLatLng().lat + ', ' + marker.getLatLng().lng + ')'
+            }).join(', ') + ')'
+            _self.points(data)
+        }
+    }
+
+    function setAddress(address) {
+        _self.address(address)
+    }
+
+    function setLotPlan(lot, plan) {
+        _self.lot(lot)
+        _self.plan(plan)
+    }
+
+    function removeAllPoints() {
+        _self.points('')
+        clearSelection()
+    }
+
+    function clearSelection() {
+        _self.selection().forEach(function (selection) {
+            captureTool.searchresults.removeMarker(selection)
+        });
+        _self.selection.removeAll();
+    }
+
+    function removeSelection() {
+        captureTool.searchresults.removeMarker(this)
+        _self.selection.remove(this);
+    }
+
+    function checkAllSearchData(vm, e) {
+        // first remove all items from our selection
+        _self.selectedData.removeAll();
+
+        // if we have checked the select all, then we want to add them all
+        if (e.target.checked) {
+            for (var i = 0; i < _self.searchData().length; i++) {
+                _self.selectedData.push(_self.searchData()[i].attributes);
+            }
+        }
+        return true;
+    }
+
+    // clears data stores, defaults to all data
+    function clearData(search) {
+        if ((search || search === undefined) && _self.searchData().length) {
+            _self.searchData.removeAll()
+            _self.points('')
+        }
+    }
+
+    /**
+     * Return public API
+     */
+    return {
+        constructor: constructor(),
+        clearSelection: clearSelection,
+        removeAllPoints: removeAllPoints,
+        clearData: clearData,
+        notifyClient: notifyClient,
+        setAddress: setAddress,
+        getAddress: function () { return _self.address() },
+        setPoints: function () { _self.points() },
+        getPoints: function () { return _self.points() },
+        setLotPlan: setLotPlan,
+        getLot: function () { return _self.lot() },
+        getPlan: function () { return _self.plan() },
+        getMapElement: function () { return _self.mapDiv },
+        getSearchData: function () { return _self.searchData },
+        getSelectedData: function () { return _self.selectedData },
+        getSelection: function () { return _self.selection },
+
+    };
+})(jQuery, ko);
+
 
 captureTool.searchresults = (function (jQuery, ko) {
     var _self,
@@ -511,176 +696,5 @@ captureTool.lotplansearchfields = (function (jQuery, ko) {
 
 })(jQuery, ko);
 
-captureTool.main = (function (jQuery, ko) {
 
-    'use strict';
-
-    var _self = new vmMain()
-
-    function constructor() {
-        var searchElement = $.find("spatialDataCaptureTool")[0]
-        _self.isLoading(true);
-        var templateFile = $(searchElement).attr("data-template-file")
-        if (!templateFile)
-            templateFile = "Content/templates/SpatialDataCaptureTool.html"
-        captureToolUtils.ajaxRequest(encodeURIComponent(templateFile) + '?90', 'GET', null, function (data) {
-            if (data) {
-                $(searchElement).html(_.template(data)(_self))
-                var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
-                var lotPlanElement = $(searchElement).find('lotplansearchfields')[0]
-                var searchResultElement = $(searchElement).find('searchresults')[0]
-                _self.mapDiv = $(searchElement).find('div.map:first')[0]
-                captureTool.lotplansearchfields.template.element = lotPlanElement
-                captureTool.addressService.template.element = addressSearchElement
-                captureTool.searchresults.template.element = searchResultElement
-                ko.components.register('lotplansearchfields', captureTool.lotplansearchfields);
-                ko.components.register('addresssearchfields', captureTool.addressService);
-                ko.components.register('searchresults', captureTool.searchresults);
-
-
-                //custom binding to just handle initializing a value
-                ko.bindingHandlers.init = {
-                    init: function (element, valueAccessor) {
-                        var value = valueAccessor();
-                        if (ko.isObservable(value)) {
-                            value(element.value);
-                        }
-                    }
-                }
-
-                ko.applyBindings(_self, $(searchElement).parent()[0]);
-                postBinding();
-            } else {
-                _self.isError(true);
-                _self.loading(false);
-            }
-        });
-    }
-
-    /**
-     * Post binding
-     * Actions occur after components and this VM are registered and created
-     */
-    function postBinding() {
-        // Set initial route
-        clearData(false);
-        captureTool.addressService.setup();
-        captureTool.lotplansearchfields.setup();
-
-        //        _self.id = decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("id").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-    }
-
-    function notifyClient() {
-        if (_self.selection().length > 0) {
-            var data = 'MULTIPOINT(' + _self.selection().map(function (marker) {
-                return '(' + marker.getLatLng().lat + ', ' + marker.getLatLng().lng + ')'
-            }).join(', ') + ')'
-            _self.points(data)
-        }
-    }
-
-    function vmMain() {
-        _self = this;
-
-        //page routing
-        _self.isLoading = ko.observable();
-
-        // data selected for review / product selection
-        _self.selectedData = ko.observableArray();
-
-        // data returned from a search
-        _self.searchData = ko.observableArray();
-
-        _self.selection = ko.observableArray()
-        _self.selection.subscribe(function () {
-            notifyClient()
-        })
-        /*
-        * Host fields binding
-        */
-        _self.address = ko.observable('')
-        _self.plan = ko.observable('')
-        _self.lot = ko.observable('')
-        _self.points = ko.observable('')
-        /*
-        *End of host fields binding
-        */
-        _self.errorText = ko.observable();
-
-        _self.checkAllSearchData = checkAllSearchData;
-        _self.clearSelection = clearSelection;
-        _self.removeAllPoints = removeAllPoints
-        _self.removeSelection = removeSelection;
-    }
-
-    function setAddress(address) {
-        _self.address(address)
-    }
-
-    function setLotPlan(lot, plan) {
-        _self.lot(lot)
-        _self.plan(plan)
-    }
-
-    function removeAllPoints() {
-        _self.points('')
-        clearSelection()
-    }
-
-    function clearSelection() {
-        _self.selection().forEach(function (selection) {
-            captureTool.searchresults.removeMarker(selection)
-        });
-        _self.selection.removeAll();
-    }
-
-    function removeSelection() {
-        captureTool.searchresults.removeMarker(this)
-        _self.selection.remove(this);
-    }
-
-    function checkAllSearchData(vm, e) {
-        // first remove all items from our selection
-        _self.selectedData.removeAll();
-
-        // if we have checked the select all, then we want to add them all
-        if (e.target.checked) {
-            for (var i = 0; i < _self.searchData().length; i++) {
-                _self.selectedData.push(_self.searchData()[i].attributes);
-            }
-        }
-        return true;
-    }
-
-    // clears data stores, defaults to all data
-    function clearData(search) {
-        if ((search || search === undefined) && _self.searchData().length) {
-            _self.searchData.removeAll()
-            _self.points('')
-        }
-    }
-
-    /**
-     * Return public API
-     */
-    return {
-        constructor: constructor(),
-        clearSelection: clearSelection,
-        removeAllPoints: removeAllPoints,
-        clearData: clearData,
-        notifyClient: notifyClient,
-        setAddress: setAddress,
-        getAddress: function () { return _self.address() },
-        setPoints: function () { _self.points() },
-        getPoints: function () { return _self.points() },
-        setLotPlan: setLotPlan,
-        getLot: function () { return _self.lot() },
-        getPlan: function () { return _self.plan() },
-        getMapElement: function () { return _self.mapDiv },
-        getSearchData: function () { return _self.searchData },
-        getSelectedData: function () { return _self.selectedData },
-        getSelection: function () { return _self.selection },
-
-    };
-})(jQuery, ko);
 
