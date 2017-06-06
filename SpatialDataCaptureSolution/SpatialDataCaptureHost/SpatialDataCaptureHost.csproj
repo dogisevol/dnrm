@@ -195,6 +195,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="images\loading.gif" />
+    <Content Include="images\marker-icon-2x.png" />
     <Content Include="images\spct-marker-icon.png" />
     <Content Include="images\spct-marker-shadow.png" />
     <Content Include="Scripts\lib\bootstrap.min.js" />
