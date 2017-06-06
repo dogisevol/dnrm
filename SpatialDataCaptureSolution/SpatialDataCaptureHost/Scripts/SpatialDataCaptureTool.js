@@ -33,14 +33,14 @@ captureTool.configuration = (function () {
         "source": {
             "type": "mapLayer",
             "mapLayerId": 0
-            //"mapLayerId": 1
+            //"mapLayerId": 1 // Use if using MiningAdministrativeAreas as operational map
         }
     },
     {
         "id": 1000,
         "source": {
             "type": "mapLayer",
-            //"mapLayerId": 9
+            //"mapLayerId": 9 // Use if using MiningAdministrativeAreas as operational map
             "mapLayerId": 4
         }
     }]
