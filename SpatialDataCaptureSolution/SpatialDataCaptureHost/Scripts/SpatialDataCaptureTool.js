@@ -1,12 +1,60 @@
-﻿/* Lotplan - Search results component
-    * 
- * Search results are received from addressService or lotplansearch fields and results are displayed.
- * A custom event is dispatched once results are displayed to tell the search elements to stop loading.
- */
-
-// Namespace detection
-if (typeof (lotplan) !== "object") lotplan = {};
+﻿if (typeof (lotplan) !== "object") lotplan = {};
 if (typeof (lotplan.components) !== "object") lotplan.components = {};
+
+lotplan.components.configuration = (function () {
+    _self = this
+    /*
+    * baseMap -  is used to display Esri hosted basemaps and attributes data providers appropriately
+    * addressTypeAheadURL - Address Lookup Service URL returning list of addresses
+    * addressURL - Address map URL returns location of interest coordinates
+    * operationalMap - Operational map to be displayed on the top of the base map
+    * lotplanMapURL - Address map URL returns map at location of interest coordinates based on lot and plan number
+    * lotplanbupURL - Address map URL returns OBJECTID of BUP (building unit plan) lot and plan number
+    * lotplanrelatedURL - Address map URL returns map at location of interest coordinates based on OBJECTID of BUP
+    */
+
+
+    _self.baseMap = "Streets"
+
+    _self.addressTypeAheadURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&outFields=ADDRESS&f=json&where=",
+    _self.addressURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&where=",
+    //_self.operationalMap = "https://gisservices.information.qld.gov.au/arcgis/rest/services/Boundaries/MiningAdministrativeAreas/MapServer",
+        _self.operationalMap = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",
+    _self.lotplanMapURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
+    _self.lotplanURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/4/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
+    _self.lotplanbupURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
+    _self.lotplanrelatedURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/queryRelatedRecords?relationshipId=1&outFields=*&definitionExpression=&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnZ=false&returnM=false&gdbVersion=&f=json&objectIds=";
+
+
+    _self.dynamicLayers = [{
+        "id": 1,
+        "source": {
+            "type": "mapLayer",
+            "mapLayerId": 0
+            //"mapLayerId": 1
+        }
+    },
+    {
+        "id": 1000,
+        "source": {
+            "type": "mapLayer",
+            //"mapLayerId": 9
+            "mapLayerId": 4
+        }
+    }]
+
+    return {
+        getAddressTypeAheadURL: function () { return _self.addressTypeAheadURL },
+        getAddressURL: function () { return _self.addressURL },
+        getOperationalMap: function () { return _self.operationalMap },
+        getDynamicLayers: function () { return _self.dynamicLayers },
+        getLotplanURL: function () { return _self.lotplanURL },
+        getLotplanMapURL: function () { return _self.lotplanMapURL },
+        getLotplanbupURL: function () { return _self.lotplanbupURL },
+        getBaseMap: function () { return _self.baseMap }
+    }
+})();
+
 
 lotplan.components.searchresults = (function (jQuery, ko) {
 
@@ -14,8 +62,7 @@ lotplan.components.searchresults = (function (jQuery, ko) {
     var _self,
         map,
         markerGroup,
-        dynamicLayerUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer",
-        selectedIcon = new L.Icon.Default({ iconUrl: "images/marker-icon.png", shadowUrl: 'images/marker-shadow.png', });
+        selectedIcon = new L.Icon.Default({ iconUrl: "marker-icon.png", shadowUrl: 'marker-shadow.png', });
 
 
     /********************************************************************************** Lifecycle */
@@ -97,31 +144,18 @@ lotplan.components.searchresults = (function (jQuery, ko) {
 
     function setupMap() {
         map = L.map('map').setView([-33.86617516416043, 151.2077522277832], 15);
-        L.esri.basemapLayer("Streets").addTo(map);
+        L.esri.basemapLayer(lotplan.components.configuration.getBaseMap()).addTo(map);
         L.esri.dynamicMapLayer({
-            url: dynamicLayerUrl,
+            url: lotplan.components.configuration.getOperationalMap(),
             opacity: 0.7,
-            dynamicLayers: [{
-                "id": 1,
-                "source": {
-                    "type": "mapLayer",
-                    "mapLayerId": 4
-                }
-            },
-            {
-                "id": 1000,
-                "source": {
-                    "type": "mapLayer",
-                    "mapLayerId": 0
-                }
-            }]
+            dynamicLayers: lotplan.components.configuration.getDynamicLayers()
         }).addTo(map);
         lotplan.main.clearSelection()
         markerGroup = L.layerGroup().addTo(map);
         map.on('click', onMapClick);
 
 
-        L.Icon.Default.imagePath = 'image';
+        L.Icon.Default.imagePath = 'images/';
 
         var bounds = L.latLngBounds([]),
             searchData = lotplan.main.getSearchData()
@@ -173,10 +207,10 @@ lotplan.components.searchresults = (function (jQuery, ko) {
             reg = new RegExp(
                 "([-+]?[0-9]*\.?[0-9]+,.?[+]?[0-9]*\.?[0-9]+)", "g");
             var point
-            while ((point = reg.exec(points)) !== null) {                
+            while ((point = reg.exec(points)) !== null) {
                 var a = point[0].split(',')
                 _self.onMapClick({ 'latlng': { 'lat': a[0], 'lng': a[1] } })
-            }        
+            }
         }
     }
 
@@ -282,8 +316,6 @@ lotplan.components.addressService = (function (jQuery, ko) {
 
     var _self;
 
-    var addressURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&outFields=ADDRESS&f=json&where=";
-    var addressMapURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&where=";
 
     /********************************************************************************** Lifecycle */
 
@@ -296,9 +328,9 @@ lotplan.components.addressService = (function (jQuery, ko) {
             wrapper = new lotplan.utils.TypeaheadWrapper($typeahead, function (query, syncResults, asyncResults) {
 
                 _self.loading(true);
-                var addrUrl = addressURL + encodeURIComponent("LOWER(ADDRESS) like '" + query.toLowerCase().trim() + "%'");
+                var addrUrl = lotplan.components.configuration.getAddressTypeAheadURL() + encodeURIComponent("LOWER(ADDRESS) like '" + query.toLowerCase().trim() + "%'");
 
-                return jQuery.get(addrUrl).success(function (data) {
+                return jQuery.get(addrUrl, null, function (data) {
 
                     _self.loading(false);
 
@@ -332,7 +364,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
             $('#lot_plan_search_lotno').val('')
             $('#lot_plan_search_planno').val('')
             _self.loading(true)
-            getAddressSearchResults(address, true   )
+            getAddressSearchResults(address, true)
         }
     }
 
@@ -388,7 +420,7 @@ lotplan.components.addressService = (function (jQuery, ko) {
      * Get search results
      */
     function getAddressSearchResults(searchtext, isFirstSearch) {
-        lotplan.utils.ajaxRequest(addressMapURL + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, searchtext, null, null, isFirstSearch));
+        lotplan.utils.ajaxRequest(lotplan.components.configuration.getAddressURL() + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, searchtext, null, null, isFirstSearch));
     }
 
 
@@ -427,10 +459,6 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
 
     var _self;
 
-    var lotplanMapURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
-    var lotplanURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/4/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
-    var lotplanbupURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
-    var lotplanrelatedURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/queryRelatedRecords?relationshipId=1&outFields=*&definitionExpression=&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnZ=false&returnM=false&gdbVersion=&f=json&objectIds=";
 
 
     /********************************************************************************** Lifecycle */
@@ -440,7 +468,6 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
      * Init fired off when the
      */
     function setup() {
-
         //catch when loading is finished and set loading to false
         jQuery(document).on('loadingFinished', false, function (e) {
             _self.loading(false);
@@ -526,9 +553,9 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
     function getLotPlanSearchResults(isFirstSearch) {
         if (_self.searchPlan().match('BUP')) {
             //lotplan is of type BUP so it must poll 21 then 4 for object IDS then 0 for addresses
-            lotplan.utils.ajaxRequest(lotplanbupURL + "BUP_LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (layer21results) {
+            lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanbupURL() + "BUP_LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (layer21results) {
                 if (layer21results && JSON.parse(layer21results).features.length > 0) {
-                    lotplan.utils.ajaxRequest(lotplanrelatedURL + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch))
+                    lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanrelatedURL() + JSON.parse(layer21results).features[0].attributes.OBJECTID, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch))
                 } else {
                     //no lot found
                     lotplan.components.searchresults.setSearchData.bind(null);
@@ -538,7 +565,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
             });
         } else {
             //a non BUP lotplan should search layer 4
-            lotplan.utils.ajaxRequest(lotplanURL + "LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (results) {
+            lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanURL() + "LOTPLAN+%3D+%27" + _self.searchLot() + _self.searchPlan() + "%27", 'GET', null, function (results) {
                 if (JSON.parse(results).features.length > 0) {
                     var objectIDs = "";
                     for (var j in JSON.parse(results).features) {
@@ -547,7 +574,7 @@ lotplan.components.lotplansearchfields = (function (jQuery, ko) {
                         }
                         objectIDs += "LOTPLAN+%3D+%27" + JSON.parse(results).features[j].attributes.LOTPLAN + "%27";
                     }
-                    lotplan.utils.ajaxRequest(lotplanMapURL + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch));
+                    lotplan.utils.ajaxRequest(lotplan.components.configuration.getLotplanMapURL() + objectIDs, 'GET', null, lotplan.components.searchresults.setSearchData.bind(_self, null, _self.searchPlan(), _self.searchLot(), isFirstSearch));
                 } else {
                     //no lot found
                     lotplan.components.searchresults.setSearchData.bind(null);
@@ -593,14 +620,7 @@ lotplan.main = (function (jQuery, ko) {
 
     'use strict';
 
-    var _self = new vmMain(),
-
-        productsAvailableUrl = "https://propertysearch.dnrm.qld.gov.au/productsAvailable",
-
-        selectedFetchCounter = 0
-        ;
-
-    /********************************************************************************** Lifecycle */
+    var _self = new vmMain()
 
     function constructor() {
         var searchElement = $.find("spatialDataCaptureTool")[0]
@@ -608,7 +628,7 @@ lotplan.main = (function (jQuery, ko) {
         var templateFile = $(searchElement).attr("data-template-file")
         if (!templateFile)
             templateFile = "Content/templates/SpatialDataCaptureTool.html"
-        lotplan.utils.ajaxRequest(encodeURIComponent(templateFile)+'?90', 'GET', null, function (data) {
+        lotplan.utils.ajaxRequest(encodeURIComponent(templateFile) + '?90', 'GET', null, function (data) {
             if (data) {
                 $(searchElement).html(_.template(data)(_self))
                 var addressSearchElement = $(searchElement).find('addresssearchfields')[0]
@@ -647,17 +667,12 @@ lotplan.main = (function (jQuery, ko) {
      * Actions occur after components and this VM are registered and created
      */
     function postBinding() {
-        // activate any tooltips
-        jQuery(document).ready(function () {
-            jQuery("body").tooltip({ selector: '[data-toggle=tooltip]' });
-        });
-
         // Set initial route
         clearData(false);
         lotplan.components.addressService.setup();
         lotplan.components.lotplansearchfields.setup();
 
-        _self.id = decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("id").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
+        //        _self.id = decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent("id").replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
     }
 
     function notifyClient() {
@@ -665,7 +680,7 @@ lotplan.main = (function (jQuery, ko) {
             var data = 'MULTIPOINT(' + _self.selection().map(function (marker) {
                 return '(' + marker.getLatLng().lat + ', ' + marker.getLatLng().lng + ')'
             }).join(', ') + ')'
-                _self.points(data)
+            _self.points(data)
         }
     }
 
@@ -768,7 +783,7 @@ lotplan.main = (function (jQuery, ko) {
         notifyClient: notifyClient,
         setAddress: setAddress,
         getAddress: function () { return _self.address() },
-        setPoints: function () {_self.points() },
+        setPoints: function () { _self.points() },
         getPoints: function () { return _self.points() },
         setLotPlan: setLotPlan,
         getLot: function () { return _self.lot() },

@@ -4,23 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title DataCaptureTool</title>
-     @Styles.Render("~/Content/css")
-    <!--TODO script bundling-->
-    @Scripts.Render("~/bundles/jquery")
+
+    @Styles.Render("~/Content/css")
+
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
-    <SCRIPT src="~/Scripts/lib/jquery-1.12.4.min.js" type="text/javascript" data-bind-filename="jquery.min.js"></SCRIPT>
+
+    <SCRIPT src="~/Scripts/lib/jquery-3.2.1.min.js" type="text/javascript" data-bind-filename="jquery.min.js"></SCRIPT>
     <SCRIPT src="~/Scripts/lib/underscore.js" type="text/javascript" data-bind-filename="underscore.js"></SCRIPT>
     <SCRIPT src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" type="text/javascript"></SCRIPT>
-    
-
-    <SCRIPT src="~/Scripts/lib/knockout-min.js" type="text/javascript" data-bind-filename="knockout-min.js"></SCRIPT>
+    <SCRIPT src="~/Scripts/lib/knockout-3.4.2.js" type="text/javascript" data-bind-filename="knockout-3.4.2.js"></SCRIPT>
     <SCRIPT src="~/Scripts/lib/bootstrap.min.js" type="text/javascript" data-bind-filename="bootstrap.min.js"></SCRIPT>
-    <SCRIPT src="~/Scripts/lib/moment.min.js" type="text/javascript" data-bind-filename="moment.min.js"></SCRIPT>
-    <SCRIPT src="~/Scripts/lib/typeahead.bundle.min.js" type="text/javascript" data-bind-filename="typeahead.bundle.min.js"></SCRIPT>
-    <SCRIPT src="~/Scripts/lib/leaflet.js?@{@DateTime.Now.ToString()}" data-bind-filename="leaflet.js"></SCRIPT>
-    <SCRIPT src="~/Scripts/lib/esri-leaflet.js"></SCRIPT>
-    <SCRIPT type="text/javascript" src="~/Scripts/SpatialDataCaptureToolUtils.js?@{@DateTime.Now.ToString()}"></SCRIPT>
+    <SCRIPT src="~/Scripts/lib/typeahead.bundle.js" type="text/javascript" data-bind-filename="typeahead.bundle.js"></SCRIPT>
+    <SCRIPT src="~/Scripts/lib/leaflet.js" data-bind-filename="leaflet.js"></SCRIPT>
+    <SCRIPT src="~/Scripts/lib/esri-leaflet-2.0.8.js"></SCRIPT>
+    <SCRIPT type="text/javascript" src="~/Scripts/SpatialDataCaptureToolUtils.js"></SCRIPT>
 </head>
 <body>
     <div class="container body-content">

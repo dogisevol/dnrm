@@ -10,11 +10,6 @@ namespace SpatialDataCaptureHost
         {
             bundles.UseCdn = true;
 
-
-            bundles.Add(new ScriptBundle("~/bundles/jquery", "https://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.12.4.js").Include(
-                        "~/Scripts/jquery-{version}.js"));
-
-
             bundles.Add(new StyleBundle("~/Content/css")
                 .IncludeDirectory("~/Content/css", "*.css", true));
         }

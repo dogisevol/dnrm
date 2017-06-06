@@ -28,10 +28,9 @@
     </form>
     <hr>
     <!--Spatial data capture tool inserted as knockout component in host form-->
-    <spatialDataCaptureTool data-template-file='@Url.Content("~/Content/templates/SpatialDataCaptureTool.html")'></spatialDataCaptureTool>
+    <spatialDataCaptureTool id="myComponent" data-template-file='@Url.Content("~/Content/templates/SpatialDataCaptureTool.html")'></spatialDataCaptureTool>
     <hr />
 </div>
-<script type="text/javascript" src="~/Scripts/SpatialDataCaptureTool.js?@{@DateTime.Now.ToString()}"></script>
 
 <script type="text/javascript">
 
@@ -60,20 +59,17 @@
     }
 
 
-
-    $().ready(function () {
-
         //---------------------------------------------------------
-        // Load host fields test start
-        
-        $("#address").val("37 Boundary Street South Brisbane QLD (Brisbane City)");
-        $("#points").val("MULTIPOINT((-27.473688755121273, 153.01316656172276), (-27.47384343661422, 153.01305659115312))");
-        //$("#lot").val("8")
-        //$("#plan").val("RP716599");
-        //$("#points").val("MULTIPOINT((-19.298068311704792, 146.77623369862886), (-19.298220201712716, 146.7758260028586))");
+        // Load host fields test start      
+        //$("#address").val("37 Boundary Street South Brisbane QLD (Brisbane City)");
+        //$("#points").val("MULTIPOINT((-27.473688755121273, 153.01316656172276), (-27.47384343661422, 153.01305659115312))");
+        $("#lot").val("8")
+        $("#plan").val("RP716599");
+        $("#points").val("MULTIPOINT((-19.298068311704792, 146.77623369862886), (-19.298220201712716, 146.7758260028586))");
 
         // Load host fields test end
         //---------------------------------------------------------
-    });
 
 </script>
+
+<script type="text/javascript" src="~/Scripts/SpatialDataCaptureTool.js?@{@DateTime.Now.ToString()}"></script>
