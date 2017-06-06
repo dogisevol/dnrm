@@ -1,19 +1,18 @@
 ﻿if (typeof (lotplan) !== "object") lotplan = {};
 if (typeof (lotplan.components) !== "object") lotplan.components = {};
 
+
+/**
+* @param baseMap -  is used to display Esri hosted basemaps and attributes data providers appropriately
+* @param addressTypeAheadURL - Address Lookup Service URL returning list of addresses
+* @param addressURL - Address map URL returns location of interest coordinates
+* @param operationalMap - Operational map to be displayed on the top of the base map
+* @param lotplanMapURL - Address map URL returns map at location of interest coordinates based on lot and plan number
+* @param lotplanbupURL - Address map URL returns OBJECTID of BUP (building unit plan) lot and plan number
+* @param lotplanrelatedURL - Address map URL returns map at location of interest coordinates based on OBJECTID of BUP
+*/
 lotplan.components.configuration = (function () {
     _self = this
-    /*
-    * baseMap -  is used to display Esri hosted basemaps and attributes data providers appropriately
-    * addressTypeAheadURL - Address Lookup Service URL returning list of addresses
-    * addressURL - Address map URL returns location of interest coordinates
-    * operationalMap - Operational map to be displayed on the top of the base map
-    * lotplanMapURL - Address map URL returns map at location of interest coordinates based on lot and plan number
-    * lotplanbupURL - Address map URL returns OBJECTID of BUP (building unit plan) lot and plan number
-    * lotplanrelatedURL - Address map URL returns map at location of interest coordinates based on OBJECTID of BUP
-    */
-
-
     _self.baseMap = "Streets"
 
     _self.addressTypeAheadURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&outFields=ADDRESS&f=json&where=",
@@ -64,17 +63,6 @@ lotplan.components.searchresults = (function (jQuery, ko) {
         markerGroup,
         selectedIcon = new L.Icon.Default({ iconUrl: "marker-icon.png", shadowUrl: 'marker-shadow.png', });
 
-
-    /********************************************************************************** Lifecycle */
-
-    /**
-     * Init 
-     */
-    function setup() {
-
-    }
-
-    // Script for adding marker on map click
     function onMapClick(e) {
         var geojsonFeature = {
             "type": "Feature",
@@ -123,15 +111,8 @@ lotplan.components.searchresults = (function (jQuery, ko) {
         }).addTo(markerGroup);
     }
 
-    // Function to handle delete as well as other events on marker popup open
     function onPopupOpen() {
         var tempMarker = this;
-
-        //var tempMarkerGeoJSON = this.toGeoJSON();
-
-        //var lID = tempMarker._leaflet_id; // Getting Leaflet ID of this marker
-
-        // To remove marker on click of delete
         $(".marker-delete-button:visible").click(function () {
             lotplan.main.getSelection().remove(tempMarker)
             map.removeLayer(tempMarker);
@@ -276,17 +257,10 @@ lotplan.components.searchresults = (function (jQuery, ko) {
     }
 
 
-
-
-    /********************************************************************************** Private */
-
     /**
      * Return the component and public API
      */
     return {
-
-        // API
-        setup: setup,
         setupMap: setupMap,
         setSearchData: setSearchData,
         removeMarker: removeMarker,
