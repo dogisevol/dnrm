@@ -201,10 +201,6 @@ captureTool.searchresults = (function (jQuery, ko) {
         }
     }
 
-
-
-
-
     /**
     * Public: Parse and set search data once it is received from other classes
     */
@@ -271,12 +267,7 @@ captureTool.searchresults = (function (jQuery, ko) {
 
 captureTool.addressService = (function (jQuery, ko) {
 
-
     var _self;
-
-
-    /********************************************************************************** Lifecycle */
-
 
     /**
      * Init 
@@ -326,9 +317,6 @@ captureTool.addressService = (function (jQuery, ko) {
         }
     }
 
-    /********************************************************************************** View models */
-
-
     /**
      * View model
      * @constructor
@@ -347,9 +335,6 @@ captureTool.addressService = (function (jQuery, ko) {
         _self.resetAddressSearch = resetAddressSearch
         _self.searchText = ko.observable('')
     }
-
-
-    /********************************************************************************** Event handlers */
 
     /**
      * An address is provided and searched for
@@ -371,17 +356,12 @@ captureTool.addressService = (function (jQuery, ko) {
         captureTool.main.clearData();
     }
 
-
-    /********************************************************************************** Private */
-
     /**
      * Get search results
      */
     function getAddressSearchResults(searchtext, isFirstSearch) {
         captureToolUtils.ajaxRequest(captureTool.configuration.getAddressURL() + encodeURIComponent("ADDRESS='" + searchtext + "'"), 'GET', null, captureTool.searchresults.setSearchData.bind(_self, searchtext, null, null, isFirstSearch));
     }
-
-
 
     /**
      * Return the component and public API
@@ -398,19 +378,11 @@ captureTool.addressService = (function (jQuery, ko) {
         template: { element: 'addressSearchFields' },
         synchronous: true
     };
-
-
 })(jQuery, ko);
 
 captureTool.lotplansearchfields = (function (jQuery, ko) {
 
-
     var _self;
-
-
-
-    /********************************************************************************** Lifecycle */
-
 
     /**
      * Init fired off when the
@@ -434,10 +406,6 @@ captureTool.lotplansearchfields = (function (jQuery, ko) {
 
     }
 
-
-    /********************************************************************************** View models */
-
-
     /**
      * View model
      * @constructor
@@ -457,10 +425,6 @@ captureTool.lotplansearchfields = (function (jQuery, ko) {
         _self.searchLot = ko.observable('');
         _self.searchPlan = ko.observable('');
     }
-
-
-
-    /********************************************************************************** Event handlers */
 
     /**
      * A search is made with a lot and plan number
@@ -488,9 +452,6 @@ captureTool.lotplansearchfields = (function (jQuery, ko) {
         this.isError(false);
         captureTool.main.clearData();
     }
-
-
-    /********************************************************************************** Private */
 
     /**
      * Get search results
@@ -534,17 +495,12 @@ captureTool.lotplansearchfields = (function (jQuery, ko) {
 
     }
 
-
-
     /**
      * Return the component and public API
      */
     return {
-
         // API
         setup: setup,
-
-
         // Component
         setError: function (value) { _self.isError(value); },
         viewModel: viewModel,
@@ -622,9 +578,6 @@ captureTool.main = (function (jQuery, ko) {
             _self.points(data)
         }
     }
-
-
-    /********************************************************************************** View models */
 
     function vmMain() {
         _self = this;
