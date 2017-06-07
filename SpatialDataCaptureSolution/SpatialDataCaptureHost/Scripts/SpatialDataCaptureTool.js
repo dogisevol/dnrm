@@ -149,6 +149,9 @@ captureTool.main = (function (jQuery, ko) {
     function postBinding() {
         // Set initial route
         clearData(false);
+        $('#address_tab').collapse('hide');
+        $('#lot_plan_tab').collapse('hide');
+        $('.panel-title').attr('data-toggle', 'collapse');
         captureTool.addressService.setup();
         captureTool.lotplansearchfields.setup();
 
@@ -497,6 +500,8 @@ captureTool.addressService = (function (jQuery, ko) {
             $('#address_search_address').val(address)
             $('#lot_plan_search_lotno').val('')
             $('#lot_plan_search_planno').val('')
+            $('#lot_plan_tab').collapse('show');
+            $('.panel-title').attr('data-toggle', '');
             _self.loading(true)
             getAddressSearchResults(address, true)
         }
@@ -583,6 +588,8 @@ captureTool.lotplansearchfields = (function (jQuery, ko) {
             $('#address_search_address').val('')
             $('#lot_plan_search_lotno').val(lot.trim())
             $('#lot_plan_search_planno').val(plan.toUpperCase().trim())
+            $('#lot_plan_tab').collapse('show');
+            $('.panel-title').attr('data-toggle', '');
             _self.loading(true);
             _self.searchLot(lot);
             _self.searchPlan(plan.toUpperCase().trim());
