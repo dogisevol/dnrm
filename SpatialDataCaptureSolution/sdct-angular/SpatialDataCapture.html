@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Esri Angular Map</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body ng-app="mapApp" ng-controller="AppController">
+
+    <div class="wrapper">
+		<spatial-data-capture map-center="[-27, 154]" zoom-level="12" base-map="Streets">
+			<sdc-dynamic-map 
+				layer-defs='[{"id": 1, "source": {"type": "mapLayer", "mapLayerId": 0}},{"id": 1000,"source": {"type": "mapLayer","mapLayerId": 4}}]' 
+				url="https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer" opacity="0.6">
+			</sdc-dynamic-map>
+		</spatial-data-capture>
+    </div>
+    <!--External JavaScript-->
+    <script src="libs/angular.js"></script>
+    <script src="libs/leaflet.js"></script>
+    <script src="libs/esri-leaflet.js"></script>
+    <script src="libs/proj4j.js"></script>
+	<script src="libs/angular-leaflet-directive.min.js"></script>
+    <!--Application Level JavaScript-->
+    <script src="app/module.js"></script>
+    <script src="app/spatial-data-capture/spatial-data-capture.js"></script>
+</body>
+</html>
