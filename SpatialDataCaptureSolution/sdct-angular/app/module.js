@@ -13,8 +13,9 @@
     });
 
 	    app.controller('AppController', ['$scope', function($scope) {	
+			$scope.sdcPoints = []
 			$scope.$watchCollection(
-				"sdcMarkers",
+				"sdcPoints",
 				function( newValue, oldValue ) {
 					console.log(newValue)
 					console.log(oldValue)
