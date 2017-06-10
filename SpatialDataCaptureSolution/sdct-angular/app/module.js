@@ -7,18 +7,12 @@
 (function() {
     var app = angular.module('mapApp', ["leaflet-directive", "esri-map-module"]);
 
-    // The AppData service works like an application wide model, keeping up with state etc. of the application.
-    app.factory('AppData', function() {
-        return {state:"map"};
-    });
-
 	    app.controller('AppController', ['$scope', function($scope) {	
 			$scope.sdcPoints = []
 			$scope.$watchCollection(
 				"sdcPoints",
 				function( newValue, oldValue ) {
-					console.log(newValue)
-					console.log(oldValue)
+					console.log($scope.sdcPoints)
 				}
 			)
 		}

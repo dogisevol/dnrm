@@ -61,7 +61,6 @@
 												closeLink.style.cursor = 'hand'
 												closeLink.onclick = function () {
 													map.removeLayer(tempMarker)
-													mapCtrl.markers.remove(tempMarker)
 													mapCtrl.points.remove(mapCtrl.markersToPoints[marker])
 												}
 											}
@@ -224,12 +223,13 @@
             restrict: 'E',
             transclude: true,
             controller: 'MapCtrl',
-            templateUrl: 'app/spatial-data-capture/spatial-data-capture.tpl.html',
-			  scope: {
-                mapCenter: "=",
-                zoomLevel: "@",
-                showSearch: "@",
-				},
+            //templateUrl: 'app/spatial-data-capture/spatial-data-capture.tpl.html',
+			template : '<leaflet height="50" weight="100"></leaflet>',
+			scope: {
+				mapCenter: "=",
+				zoomLevel: "@",
+				showSearch: "@",
+			},
             controller: 'MapCtrl',
             link: function(scope, element, attributes){}
         };
