@@ -1,0 +1,83 @@
+<DIV id="contents">             
+		<DIV ng-show="showSearch">
+			<DIV class="panel panel-default">
+				<DIV class="panel-heading" ng-click="showAddressSearch = !showAddressSearch; showLotplanSearch = false">
+					<H4 class="panel-title">Search by address</H4>
+				</DIV>
+					<DIV class="panel-body" ng-show="showAddressSearch">
+								<DIV class="form-group">
+									<LABEL class="col-md-3" for="address_search_address">Address</LABEL>
+									<DIV class="col-md-9">
+										<INPUT type="text" class="form-control" id="address_search_address" ng-value="addressSearchField" />
+									</DIV>
+								</DIV>
+								<DIV class="form-group">
+									<DIV class="col-sm-offset-3 col-sm-9">
+										<DIV class="alert hidden" role="alert">
+										</DIV>
+										<INPUT type="SUBMIT" value="Search" class="btn btn-success" ng-click="searchByAddress()">
+										<INPUT type="BUTTON" value="Reset" class="btn btn-default reset">
+										<IMG src="images/loading.gif" alt="Loading" class="loading"/ ng-show="isLoading">
+									</DIV>
+								</DIV>
+								<DIV class="alert alert-danger" ng-show="addressSearchError">
+									<P>We can&#39;t find any results for &#34;<SPAN data-bind="text: $data.searchText()"></SPAN>&#34;. Please check the format (e.g. Street not St) or try a different search.</P>
+									<P>If you believe the address is correct, the property you are searching for may not be in our listings yet. <A href="mailto:propertysearch@dnrm.qld.gov.au?subject=PaTs%20-%20enquiry">Contact us</A> for assistance.</P>
+								</DIV>
+					</DIV>
+				<DIV class="panel-heading" ng-click="showAddressSearch = false; showLotplanSearch = !showLotplanSearch">
+					<H4 class="panel-title">Search by lot on plan</H4>
+				</DIV>
+					<DIV class="panel-body" ng-show="showLotplanSearch">
+								<DIV class="form-group">
+									<LABEL class="col-md-3" for="lot_plan_search_lotno">Lot number</LABEL>
+									<DIV class="col-md-9">
+										<INPUT type="text" class="form-control" id="lot_plan_search_lotno" name="lot_plan_search_lotno" placeholder="For example: 2" autocomplete="off"/>
+									</DIV>
+								</DIV>
+								<DIV class="form-group">
+									<LABEL class="col-md-3" for="lot_plan_search_planno">Plan number</LABEL>
+									<DIV class="col-md-9">
+										<INPUT type="text" class="form-control" id="lot_plan_search_planno" name="lot_plan_search_planno" placeholder="For example: RP43986" autocomplete="off"/>
+									</DIV>
+								</DIV>
+								<DIV class="form-group">
+									<DIV class="col-sm-offset-3 col-sm-9">
+										<DIV class="alert hidden" role="alert">
+										</DIV>
+										<INPUT type="submit" value="Search" class="btn btn-success">
+										<INPUT type="BUTTON" value="Reset" class="btn btn-default reset"
+											   data-bind="click: $data.resetLotPlanSearch">
+										
+										<IMG src="images/loading.gif" alt="Loading" class="loading"/ ng-show="isLoading">
+									</DIV>
+								</DIV>
+								<DIV class="alert alert-danger col-md-12" role="alert" ng-show="lotplanSearchError">
+									<P>We can&#39;t find any results for &#34;<SPAN data-bind="text: $data.searchLot()"></SPAN>&#34; and &#34;<SPAN data-bind="text: $data.searchPlan()"></SPAN>&#34;. Please check what you&#39;ve entered, or try a different search.</P>
+									<P>If you believe the address is correct, the property you are searching for may not be in our listings yet. Contact a <A href="https://www.dnrm.qld.gov.au/our-department/contact-us/dnrm-business-centre-contacts">a DNRM Business Centre</a> for assistance.</P>
+									<P>Common property titles such as a community title scheme or body corporate are not available here. An alternative option is to purchase your search via one of the Department&#39;s online service providers. A list of approved online distributors is available <A href="https://www.business.qld.gov.au/industry/titles-property-construction/titles-property/online-services/online-distributors." target="_blank">here</A>.</P>
+								</DIV>
+				</DIV>
+			</DIV>
+		</DIV>
+		    <leaflet height="200"></leaflet>
+			<DIV ng-show="showTable">
+				<TABLE id="results" class="table table-condensed table-hover" >
+					<THEAD>
+						<TR>
+							<TH> Latitude </TH>
+							<TH> Longitude </TH> 
+							<TH><INPUT type="button" class="btn btn-success" value="Remove all" style="float:right" ng-click="points.splice(0, points.length)" /></TH>
+						</TR>
+					</THEAD>
+					<TBODY ng-repeat="point in points">
+						<TR>
+							<TD>{{point.latlng.lat}}</TD>
+							<TD>{{point.latlng.lng}}</TD>
+							<TD><INPUT type="button" class="btn btn-success" value="Remove" style="float:right" ng-click="points.splice($index, 1)" /></TD>
+						</TR>
+					</TBODY>
+				</TABLE>
+			</DIV>
+		</searchresults>                 
+</DIV>

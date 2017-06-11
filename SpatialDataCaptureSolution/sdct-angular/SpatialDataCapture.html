@@ -8,7 +8,7 @@
 <body ng-app="mapApp">
 	<div ng-controller="AppController">
     <div class="wrapper">
-		<spatial-data-capture map-center="[-27, 154]" zoom-level="12" base-map="Streets">
+		<spatial-data-capture show-search=true map-center="[-27, 154]" zoom-level="11" base-map="Streets">
 			<sdc-dynamic-map 
 				layer-defs='[{"id": 1, "source": {"type": "mapLayer", "mapLayerId": 0}},{"id": 1000,"source": {"type": "mapLayer","mapLayerId": 4}}]' 
 				url="https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer" opacity="0.6">
@@ -51,6 +51,7 @@
 	<script src="libs/angular-leaflet-directive.min.js"></script>
     <!--Application Level JavaScript-->
     <script src="app/module.js"></script>
+	<script src="libs/SpatialDataCaptureToolUtils.js"></script>
     <script src="app/spatial-data-capture/spatial-data-capture.js"></script>
 </body>
 </html>

@@ -3,8 +3,20 @@
     var module = angular.module('esri-map-module', ["leaflet-directive"]);
 
 
-    module.controller("MapCtrl", ['$scope', '$http', 'leafletData', function($scope, $http, leafletData){
-		var mapCtrl = this;
+    module.controller("CaptureTool", ['$scope', '$http', 'leafletData', function($scope, $http, leafletData){
+		this.addressTypeAheadURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&outFields=ADDRESS&f=json&where=",
+		this.addressURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnCountOnly=false&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&where=",
+		this.lotplanMapURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
+		this.lotplanbupURL = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/21/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where=";
+		
+		var captureTool = this;
+		console.log($scope.showSearch)
+		
+		//TODO get from parent scope or configuration
+		this.lotplan = {}
+		this.lotplan.lot = "1265"
+		this.lotplan.plan = "PH1828"
+		
 		L.Icon.Default.imagePath = 'images/';
 		this.leafletData = leafletData
         this.baseLayer
@@ -24,7 +36,7 @@
 					var toRemove = []
 					var toCreate = []
 					var points = []
-					mapCtrl.markers.forEach(function(marker){
+					captureTool.markers.forEach(function(marker){
 						if($scope.points.indexOf(marker.point) < 0){
 							toRemove.push(marker)
 						}else{
@@ -36,7 +48,7 @@
 							toCreate.push(point)
 						}
 					})
-					mapCtrl.leafletData.getMap().then(function(map) {
+					captureTool.leafletData.getMap().then(function(map) {
 						toRemove.forEach(function(marker){
 							map.removeLayer(marker)
 						})
@@ -44,41 +56,47 @@
 							if(!point.latlng){
 								point.latlng = {}
 								if(point.zoneEastNorth){
-									mapCtrl.setLongLatFromZoneEastNorth(point)
+									captureTool.setLongLatFromZoneEastNorth(point)
 								}else{
 									//TODO dms
 								}
 							}
 							
-							mapCtrl.onMapClick(point, point)
+							captureTool.onMapClick(point, point)
 							
 						})
 					})
 				}
 		)
 		
-		var lotplanUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where="
-		$http.get(lotplanUrl + "LOTPLAN+%3D+%27" + "1265" + "PH1828" + "%27")
-			.then(function(response) {
-				var data = response.data
-				if (data.features.length > 0) {
-					if (data.relatedRecordGroups && data.relatedRecordGroups.length > 0) {
-						data.features = data.relatedRecordGroups[0].relatedRecords;
-					}
-					if (data.features && data.features.length > 0) {
-						var item = data.features[0]
-						mapCtrl.leafletData.getMap().then(function(map) {
-							map.setView([item.geometry.y, item.geometry.x], mapCtrl.scope.zoomLevel);
-							map.invalidateSize();
-							mapCtrl.markerGroup = L.layerGroup().addTo(map)
-							map.on('click', mapCtrl.onMapClick)
-						})
-					}
+		
+		this.searchForLotPlan = function(lotplanUrl){
+			$http.get(lotplanUrl + "LOTPLAN+%3D+%27" + captureTool.lotplan.lot + captureTool.lotplan.plan + "%27")
+				.then(function(response) {
+					//TODO error handling
+					captureTool.updateMap(response.data)
+				})	
+		}
+		
+		this.updateMap = function(data){
+			if (data.features.length > 0) {
+				if (data.relatedRecordGroups && data.relatedRecordGroups.length > 0) {
+					data.features = data.relatedRecordGroups[0].relatedRecords;
 				}
-			})	
+				if (data.features && data.features.length > 0) {
+					var item = data.features[0]
+					captureTool.leafletData.getMap().then(function(map) {
+						map.setView([item.geometry.y, item.geometry.x], captureTool.scope.zoomLevel);
+						map.invalidateSize();
+						captureTool.markerGroup = L.layerGroup().addTo(map)
+						map.on('click', captureTool.onMapClick)
+					})
+				}
+			}
+		}
 			
 		this.onMapClick = function(e, point){
-			mapCtrl.leafletData.getMap().then(function(map) {
+			captureTool.leafletData.getMap().then(function(map) {
 				var geojsonFeature = {
 					"type": "Feature",
 					"properties": {},
@@ -107,8 +125,8 @@
 							if(closeLink){
 								closeLink.style.cursor = 'hand'
 								closeLink.onclick = function () {
-									mapCtrl.points.splice(mapCtrl.points.indexOf(tempMarker.point), 1)
-									mapCtrl.markers.splice(mapCtrl.markers.indexOf(tempMarker), 1)
+									captureTool.points.splice(captureTool.points.indexOf(tempMarker.point), 1)
+									captureTool.markers.splice(captureTool.markers.indexOf(tempMarker), 1)
 									map.removeLayer(tempMarker)
 
 								}
@@ -117,8 +135,8 @@
 						marker.on('dragend', function (e) {
 							var marker = e.target
 							var oldPoint = marker.point
-							marker.point = mapCtrl.createPoint(marker)
-							mapCtrl.points[mapCtrl.points.indexOf(oldPoint)] = marker.point
+							marker.point = captureTool.createPoint(marker)
+							captureTool.points[captureTool.points.indexOf(oldPoint)] = marker.point
 						})
 						return marker
 					}	
@@ -126,10 +144,10 @@
 				if(point){
 					marker.point = point
 				}else{
-					marker.point = mapCtrl.createPoint(marker)
-					mapCtrl.points.push(marker.point)
+					marker.point = captureTool.createPoint(marker)
+					captureTool.points.push(marker.point)
 				}
-				mapCtrl.markers.push(marker)
+				captureTool.markers.push(marker)
 			})
 		}	
 
@@ -138,8 +156,8 @@
 			point.latlng = {}
 			point.latlng.latitude = marker.getLatLng().lat
 			point.latlng.longitude = marker.getLatLng().lng
-			point.dms = mapCtrl.convertLatLngToDMS(point.latitude, point.longitude)
-			mapCtrl.setZoneEastNorthFromLongLat(point)
+			point.dms = captureTool.convertLatLngToDMS(point.latitude, point.longitude)
+			captureTool.setZoneEastNorthFromLongLat(point)
 			return point
 		}	
 			
@@ -171,10 +189,10 @@
 			deg = parseInt(lng);
 			var result = {}
 			min = (lng - deg) * 60;
-			result.lng = deg + 'ยบ ' + mapCtrl.format('00', parseInt(min)) + "' " + mapCtrl.format('00.0', (min - parseInt(min)) * 60) + "''";
+			result.lng = deg + 'ยบ ' + captureTool.format('00', parseInt(min)) + "' " + captureTool.format('00.0', (min - parseInt(min)) * 60) + "''";
 			deg = parseInt(lat);
 			min = (lat - deg) * 60;
-			result.lat = deg + 'ยบ ' + mapCtrl.format('00', parseInt(min)) + "' " + mapCtrl.format('00.0', (min - parseInt(min)) * 60) + "''";
+			result.lat = deg + 'ยบ ' + captureTool.format('00', parseInt(min)) + "' " + captureTool.format('00.0', (min - parseInt(min)) * 60) + "''";
 			return result
 		}
 
@@ -245,8 +263,8 @@
 
         this.setBasemapLayer = function(strLayerName) {
             leafletData.getMap().then(function(map) {
-                if ( mapCtrl.baseLayer ){
-                    map.removeLayer(mapCtrl.baseLayer);
+                if ( captureTool.baseLayer ){
+                    map.removeLayer(captureTool.baseLayer);
                 } else {
                     var streetLayer = null;
                     map.eachLayer( function (layer) {
@@ -258,8 +276,8 @@
                         map.removeLayer(streetLayer);
                     }
                 }
-                mapCtrl.baseLayer = L.esri.basemapLayer(strLayerName);
-                mapCtrl.baseLayer.addTo(map);//'Streets'
+                captureTool.baseLayer = L.esri.basemapLayer(strLayerName);
+                captureTool.baseLayer.addTo(map);//'Streets'
             });
         };
 
@@ -273,6 +291,61 @@
         }).addTo(map);
             });
         }
+		
+		
+		this.setupTypeAhead = function() {
+        var $typeahead = jQuery('#address_search_address'),
+            wrapper = new captureToolUtils.TypeaheadWrapper($typeahead, function (query, syncResults, asyncResults) {
+
+                captureTool.isLoading= true
+                var addrUrl = captureTool.addressTypeAheadURL + encodeURIComponent("LOWER(ADDRESS) like '" + query.toLowerCase().trim() + "%'");
+
+                return jQuery.get(addrUrl, null, function (data) {
+
+                    captureTool.isLoading= false
+
+                    var addresses = [];
+                    data = JSON.parse(data);
+                    if (data.features.length < 1) {
+                        captureTool.isAddressValid = false
+                        return false;
+                    }
+
+                    data.features.forEach(function (v, i) {
+                        if (jQuery.inArray(v.attributes.ADDRESS, addresses) < 0) {
+                            addresses.push(v.attributes.ADDRESS);
+                            captureTool.isAddressValid = true
+                        }
+                    });
+
+                    asyncResults(addresses);
+
+                });
+            })
+
+        //catch when loading is finished and set loading to false
+        jQuery(document).on('loadingFinished', false, function (e) {
+            captureTool.isLoading= false
+        });
+    }
+	
+	this.searchByAddress = function() {
+        captureTool.isLoading = true;
+        captureTool.isAddressSearchError = false;
+		debugger
+        //$http.get()
+		//.then(function(response){
+			
+		//})
+	}
+		
+		captureTool.setupTypeAhead()
+		if(captureTool.lotplan){
+			//TODO configure initial search
+			captureTool.searchForLotPlan(captureTool.lotplanMapURL)
+		}else if(captureTool.address){
+			
+		}
 	}]);
 	
     var module = angular.module('esri-map-module');
@@ -281,9 +354,9 @@
         return {
             restrict: 'E',
             transclude: true,
-            controller: 'MapCtrl',
-            //templateUrl: 'app/spatial-data-capture/spatial-data-capture.tpl.html',
-			template : '<leaflet height="100" weight="100"></leaflet>',
+            controller: 'CaptureTool',
+            templateUrl: 'app/spatial-data-capture/spatial-data-capture.tpl1.html',
+			//template : '<leaflet height="100" weight="100"></leaflet>',
 			scope: {
 				mapCenter: "=",
 				zoomLevel: "@",
@@ -313,7 +386,7 @@
 				if(scope.layerDefs){
 					options.layerDefs = scope.layerDefs;
 				}
-				mapCtrl.addDynamicMapLayer(options);
+				captureTool.addDynamicMapLayer(options);
 			},
 			template: '<div ng-transclude></div>'
 		};
