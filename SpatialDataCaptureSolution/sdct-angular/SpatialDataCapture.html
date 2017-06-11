@@ -5,8 +5,8 @@
     <title>Esri Angular Map</title>
     <link rel="stylesheet" href="app.css">
 </head>
-<body ng-app="mapApp" ng-controller="AppController">
-
+<body ng-app="mapApp">
+	<div ng-controller="AppController">
     <div class="wrapper">
 		<spatial-data-capture map-center="[-27, 154]" zoom-level="12" base-map="Streets">
 			<sdc-dynamic-map 
@@ -15,6 +15,7 @@
 			</sdc-dynamic-map>
 		</spatial-data-capture>
     </div>
+	
 <table class="table">
 	<tr>
 		<th>Zone
@@ -35,10 +36,11 @@
 		{{point.zoneEastNorth.northing}}
 		</td>
 		<td>
-		<!--input type="button" value="Remove" class="btn btn-primary" ng-click="removeRow()"/-->
+		<input type="button" value="Remove" class="btn btn-primary" ng-click="sdcPoints.splice($index, 1)"/>
 		</td>
 	</tr>
 </table>
+</div>
     <!--External JavaScript-->
     <script src="libs/angular.js"></script>
     <script src="libs/leaflet.js"></script>

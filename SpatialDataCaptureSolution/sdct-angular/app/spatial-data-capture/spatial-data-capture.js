@@ -1,20 +1,61 @@
-/**
- * Created by dann6343 on 8/8/14.
- */
+
 (function() {
     var module = angular.module('esri-map-module', ["leaflet-directive"]);
 
 
     module.controller("MapCtrl", ['$scope', '$http', 'leafletData', function($scope, $http, leafletData){
 		var mapCtrl = this;
+		L.Icon.Default.imagePath = 'images/';
 		this.leafletData = leafletData
         this.baseLayer
 		this.scope = $scope
         this.layers = []
-        this.points = $scope.$parent.sdcPoints
-		this.markersToPoints = {}
-		this.pointsToMarkers = {}
+		if($scope.output){
+			$scope.points = $scope.$parent[$scope.output]	
+		}else{
+			$scope.points = $scope.$parent.sdcPoints
+		}
+		this.points = $scope.points
+		this.markers = []
 		
+		$scope.$watchCollection(
+				"points",
+				function( newValue, oldValue ) {					
+					var toRemove = []
+					var toCreate = []
+					var points = []
+					mapCtrl.markers.forEach(function(marker){
+						if($scope.points.indexOf(marker.point) < 0){
+							toRemove.push(marker)
+						}else{
+							points.push(marker.point)
+						}
+					})
+					$scope.points.forEach(function(point){
+						if(points.indexOf(point) < 0){
+							toCreate.push(point)
+						}
+					})
+					mapCtrl.leafletData.getMap().then(function(map) {
+						toRemove.forEach(function(marker){
+							map.removeLayer(marker)
+						})
+						toCreate.forEach(function(point){
+							if(!point.latlng){
+								point.latlng = {}
+								if(point.zoneEastNorth){
+									mapCtrl.setLongLatFromZoneEastNorth(point)
+								}else{
+									//TODO dms
+								}
+							}
+							
+							mapCtrl.onMapClick(point, point)
+							
+						})
+					})
+				}
+		)
 		
 		var lotplanUrl = "https://gisservices.information.qld.gov.au/arcgis/rest/services/PlanningCadastre/LandParcelPropertyFramework/MapServer/0/query?text=&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&returnIdsOnly=false&returnGeometry=true&outFields=*&f=json&returnCountOnly=false&where="
 		$http.get(lotplanUrl + "LOTPLAN+%3D+%27" + "1265" + "PH1828" + "%27")
@@ -27,85 +68,103 @@
 					if (data.features && data.features.length > 0) {
 						var item = data.features[0]
 						mapCtrl.leafletData.getMap().then(function(map) {
-							L.Icon.Default.imagePath = 'images/';
 							map.setView([item.geometry.y, item.geometry.x], mapCtrl.scope.zoomLevel);
 							map.invalidateSize();
 							mapCtrl.markerGroup = L.layerGroup().addTo(map)
-							map.on('click', function(e){
-								var geojsonFeature = {
-									"type": "Feature",
-									"properties": {},
-									"geometry": {
-										"type": "Point",
-										"coordinates": [e.latlng.lat, e.latlng.lng]
-									}
-								}
-
-								var markerGroup = L.layerGroup().addTo(map)
-								var marker
-								L.geoJson(geojsonFeature, {	
-									pointToLayer: function (feature, latlng) {
-										
-										marker = L.marker(e.latlng, {
-											riseOnHover: true,
-											draggable: true,
-											icon: new L.Icon.Default({ iconUrl: "spct-marker-icon.png", shadowUrl: 'spct-marker-shadow.png'})
-
-										})
-										marker.bindPopup(marker.getLatLng() + "<br><center><a>Remove marker</a></center>")
-										
-										marker.on("popupopen", function(e){
-											var tempMarker = this;
-											var closeLink = e.popup._contentNode.children[1]
-											if(closeLink){
-												closeLink.style.cursor = 'hand'
-												closeLink.onclick = function () {
-													map.removeLayer(tempMarker)
-													mapCtrl.points.remove(mapCtrl.markersToPoints[marker])
-												}
-											}
-										})
-										marker.on('dragend', function (e, marker) {
-											var oldPoint = mapCtrl.markersToPoints[marker]
-											var newPoint = createPoint(marker)
-											mapCtrl.pointsToMarkers[newPoint] = marker
-											mapCtrl.markersToPoints[marker] = newPoint
-											mapCtrl.points.remove(oldPoint)
-											mapCtrl.points.push(newPoint)
-										})
-										return marker
-									}	
-								}).addTo(markerGroup);
-								var point = mapCtrl.createPoint(marker)
-								mapCtrl.pointsToMarkers[point] = marker
-								mapCtrl.markersToPoints[marker] = point
-								mapCtrl.points.push(point)
-							})
+							map.on('click', mapCtrl.onMapClick)
 						})
 					}
 				}
 			})	
+			
+		this.onMapClick = function(e, point){
+			mapCtrl.leafletData.getMap().then(function(map) {
+				var geojsonFeature = {
+					"type": "Feature",
+					"properties": {},
+					"geometry": {
+						"type": "Point",
+						"coordinates": [e.latlng.lat, e.latlng.lng]
+					}
+				}
+
+				var markerGroup = L.layerGroup().addTo(map)
+				var marker
+				L.geoJson(geojsonFeature, {	
+					pointToLayer: function (feature, latlng) {
+						
+						marker = L.marker(e.latlng, {
+							riseOnHover: true,
+							draggable: true,
+							icon: new L.Icon.Default({ iconUrl: "spct-marker-icon.png", shadowUrl: 'spct-marker-shadow.png'})
+
+						})
+						marker.bindPopup(marker.getLatLng() + "<br><center><a>Remove marker</a></center>")
+						
+						marker.on("popupopen", function(e){
+							var tempMarker = this;
+							var closeLink = e.popup._contentNode.children[1]
+							if(closeLink){
+								closeLink.style.cursor = 'hand'
+								closeLink.onclick = function () {
+									mapCtrl.points.splice(mapCtrl.points.indexOf(tempMarker.point), 1)
+									mapCtrl.markers.splice(mapCtrl.markers.indexOf(tempMarker), 1)
+									map.removeLayer(tempMarker)
+
+								}
+							}
+						})
+						marker.on('dragend', function (e) {
+							var marker = e.target
+							var oldPoint = marker.point
+							marker.point = mapCtrl.createPoint(marker)
+							mapCtrl.points[mapCtrl.points.indexOf(oldPoint)] = marker.point
+						})
+						return marker
+					}	
+				}).addTo(markerGroup);
+				if(point){
+					marker.point = point
+				}else{
+					marker.point = mapCtrl.createPoint(marker)
+					mapCtrl.points.push(marker.point)
+				}
+				mapCtrl.markers.push(marker)
+			})
+		}	
 
 		this.createPoint = function(marker){
 			var point = {}
-			point.latitude = marker.getLatLng().lat
-			point.longitude = marker.getLatLng().lng
+			point.latlng = {}
+			point.latlng.latitude = marker.getLatLng().lat
+			point.latlng.longitude = marker.getLatLng().lng
 			point.dms = mapCtrl.convertLatLngToDMS(point.latitude, point.longitude)
-			point.zoneEastNorth = mapCtrl.getZoneEastNorthFromLongLat(point.latitude, point.longitude)
+			mapCtrl.setZoneEastNorthFromLongLat(point)
 			return point
 		}	
 			
-		this.getZoneEastNorthFromLongLat = function(longitude, latitude) {		
-			var zone = 1 + Math.floor((longitude+180)/6);
+		this.setZoneEastNorthFromLongLat = function(point) {		
+			var zone = 1 + Math.floor((point.latlng.longitude+180)/6);
 			var firstProjection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"; //EPSG:4326
 			var secondProjection = "+proj=utm +zone=" + zone + " +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"; //EPSG:32756		
-			var coords = proj4(firstProjection,secondProjection,[longitude, latitude]);				
-			return {
+			var coords = proj4(firstProjection,secondProjection,[point.latlng.latitude, point.latlng.longitude]);				
+			point.zoneEastNorth =  {
 				"zone" : zone,
 				"easting" : coords[0],
 				"northing" : coords[1],
 			}
+			return point
 		}	
+		
+		
+		this.setLongLatFromZoneEastNorth = function(point) {
+			var firstProjection = "+proj=utm +zone=" + point.zoneEastNorth.zone + " +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"; //EPSG:32756		
+			var secondProjection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"; //EPSG:4326
+			var coords = proj4(firstProjection,secondProjection,[point.zoneEastNorth.easting, point.zoneEastNorth.northing]);				
+			point.latlng.longitude = coords[0]
+			point.latlng.latitude = coords[1]
+			return point
+		}
 		
 		this.convertLatLngToDMS = function(lat, lng) {
 			var deg, min
@@ -224,13 +283,13 @@
             transclude: true,
             controller: 'MapCtrl',
             //templateUrl: 'app/spatial-data-capture/spatial-data-capture.tpl.html',
-			template : '<leaflet height="50" weight="100"></leaflet>',
+			template : '<leaflet height="100" weight="100"></leaflet>',
 			scope: {
 				mapCenter: "=",
 				zoomLevel: "@",
 				showSearch: "@",
+				output: "@",
 			},
-            controller: 'MapCtrl',
             link: function(scope, element, attributes){}
         };
     });

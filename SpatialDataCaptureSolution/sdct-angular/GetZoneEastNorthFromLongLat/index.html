@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Test - Convert Latitude and Longitude to UTM</title>
+
+  <script src="jquery.js"></script>
+  <script type"text/javascript" src="proj4.js"></script>
+  
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+</head>
+<body>
+	<script>
+  
+		$( document ).ready(function() {			
+			/*
+				http://www.latlong.net/place/brisbane-qld-australia-3337.html
+				Brisbane 
+				Latitude		-27.470125
+				Longitude		153.021072
+				DMS Lat			27° 28' 12.4500'' S
+				DMS Long		153° 1' 15.8592'' E
+				UTM Easting		502,081.90
+				UTM Northing	6,961,492.17
+				UTM Zone		56J
+				
+				For a southern hemisphere zone, concatenate 327 + zone number, to get 32756.
+				
+				http://spatialreference.org/
+				Search on EPSG:4326 (for source) - "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"
+				Search on EPSG:32756 (for destination) - "+proj=utm +zone=56 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+				
+				Code to first get the zone: var zone = 1 + Math.floor((lngd+180)/6);
+			*/
+
+			/*
+			 *	Returns Zone, Easting and Northing from decimal longitude and latitude.
+			 *  Zone is derived from the longitude.
+			 */
+			function getZoneEastNorthFromLongLat(longitude, latitude) {		
+				var firstProjection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"; //EPSG:4326
+				var secondProjection = "+proj=utm +zone=<ZONE> +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"; //EPSG:32756
+				var zone = 1 + Math.floor((longitude+180)/6);
+				secondProjection = secondProjection.replace("<ZONE>", zone.toString());			
+				var coords = proj4(firstProjection,secondProjection,[longitude, latitude]);				
+				return {
+					"zone" : zone,
+					"easting" : coords[0],
+					"northing" : coords[1],
+				}
+			}
+			
+			var longitude = 153.021072; // Brisbane
+			//var longitude = 80.021072; // Zone 44 somewhere??
+			var latitude = -27.470125;
+			
+			var coordinates = [longitude, latitude];
+			console.log('testing longitude=' + coordinates[0]);
+			console.log('testing latitude=' + coordinates[1]);
+						
+			console.log(getZoneEastNorthFromLongLat(longitude, latitude));
+		});
+
+	</script>
+	
+</body>
+</html>
