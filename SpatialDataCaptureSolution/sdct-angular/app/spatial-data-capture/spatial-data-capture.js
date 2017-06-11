@@ -17,6 +17,10 @@
 		this.lotplan.lot = "1265"
 		this.lotplan.plan = "PH1828"
 		
+		$scope.address = "5 Mcrae Place Frenchville QLD (Rockhampton Regional)"
+		
+		$scope.isLoading = true
+		
 		L.Icon.Default.imagePath = 'images/';
 		this.leafletData = leafletData
         this.baseLayer
@@ -297,12 +301,12 @@
         var $typeahead = jQuery('#address_search_address'),
             wrapper = new captureToolUtils.TypeaheadWrapper($typeahead, function (query, syncResults, asyncResults) {
 
-                captureTool.isLoading= true
+                $scope.isLoading= true
                 var addrUrl = captureTool.addressTypeAheadURL + encodeURIComponent("LOWER(ADDRESS) like '" + query.toLowerCase().trim() + "%'");
 
                 return jQuery.get(addrUrl, null, function (data) {
 
-                    captureTool.isLoading= false
+                    $scope.isLoading= false
 
                     var addresses = [];
                     data = JSON.parse(data);
@@ -322,37 +326,41 @@
 
                 });
             })
-
-        //catch when loading is finished and set loading to false
-        jQuery(document).on('loadingFinished', false, function (e) {
-            captureTool.isLoading= false
-        });
-    }
-	
-	this.searchByAddress = function() {
-        captureTool.isLoading = true;
+			jQuery(document).on('loadingFinished', false, function (e) {
+				$scope.isLoading= false
+			});
+		}
+		
+	$scope.searchByAddress = function() {
+        $scope.isLoading = true;
         captureTool.isAddressSearchError = false;
-		debugger
-        //$http.get()
-		//.then(function(response){
-			
-		//})
+		//TODO do it in angular way
+		$scope.address = jQuery('#address_search_address').val()
+        $http.get(captureTool.addressURL + encodeURIComponent("ADDRESS='" + $scope.address + "'"))
+		.then(function(response){
+			//TODO error handling
+			captureTool.markers.splice(0, captureTool.markers.length)
+			captureTool.points.splice(0, captureTool.points.length)
+			captureTool.updateMap(response.data)
+			$scope.isLoading = false
+		})
 	}
 		
-		captureTool.setupTypeAhead()
-		if(captureTool.lotplan){
-			//TODO configure initial search
-			captureTool.searchForLotPlan(captureTool.lotplanMapURL)
-		}else if(captureTool.address){
-			
-		}
+	captureTool.setupTypeAhead()
+	if(captureTool.lotplan){
+		//TODO configure initial search
+		captureTool.searchForLotPlan(captureTool.lotplanMapURL)
+	}else if(captureTool.address){
+	}
+	
+	$scope.isLoading = false
 	}]);
 	
     var module = angular.module('esri-map-module');
 
     module.directive('spatialDataCapture', function () {
         return {
-            restrict: 'E',
+            restrict: 'EA',
             transclude: true,
             controller: 'CaptureTool',
             templateUrl: 'app/spatial-data-capture/spatial-data-capture.tpl1.html',
@@ -362,12 +370,26 @@
 				zoomLevel: "@",
 				showSearch: "@",
 				output: "@",
+				showTable: "@",
+				isLoading: "@",
 			},
             link: function(scope, element, attributes){}
         };
     });
 	
-   module.directive('esriDynamicLayer', function(){
+	module.directive('sdc-input', function () {
+        return {
+            restrict: 'EA',
+            transclude: true,
+            controller: 'CaptureTool',
+            scope: {
+				address:'=ngModel',
+			},
+			require: 'ngModel'
+		};
+    });
+	
+    module.directive('esriDynamicLayer', function(){
 		return {
 			require: '^spatialDataCapture',
 			restrict: 'E',

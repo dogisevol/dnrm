@@ -8,7 +8,7 @@
 								<DIV class="form-group">
 									<LABEL class="col-md-3" for="address_search_address">Address</LABEL>
 									<DIV class="col-md-9">
-										<INPUT type="text" class="form-control" id="address_search_address" ng-value="addressSearchField" />
+										<INPUT type="text" sdc-input class="form-control" id="address_search_address" ng-model="address" ng-change="onAddresChnage()" />
 									</DIV>
 								</DIV>
 								<DIV class="form-group">
@@ -17,10 +17,10 @@
 										</DIV>
 										<INPUT type="SUBMIT" value="Search" class="btn btn-success" ng-click="searchByAddress()">
 										<INPUT type="BUTTON" value="Reset" class="btn btn-default reset">
-										<IMG src="images/loading.gif" alt="Loading" class="loading"/ ng-show="isLoading">
+										<IMG src="images/loading.gif" alt="Loading" class="loading" ng-show="isLoading">
 									</DIV>
 								</DIV>
-								<DIV class="alert alert-danger" ng-show="addressSearchError">
+								<DIV class="alert alert-danger" ng-show="isAddressSearchError">
 									<P>We can&#39;t find any results for &#34;<SPAN data-bind="text: $data.searchText()"></SPAN>&#34;. Please check the format (e.g. Street not St) or try a different search.</P>
 									<P>If you believe the address is correct, the property you are searching for may not be in our listings yet. <A href="mailto:propertysearch@dnrm.qld.gov.au?subject=PaTs%20-%20enquiry">Contact us</A> for assistance.</P>
 								</DIV>
@@ -49,7 +49,7 @@
 										<INPUT type="BUTTON" value="Reset" class="btn btn-default reset"
 											   data-bind="click: $data.resetLotPlanSearch">
 										
-										<IMG src="images/loading.gif" alt="Loading" class="loading"/ ng-show="isLoading">
+										<IMG src="images/loading.gif" alt="Loading" class="loading" ng-show="isLoading">
 									</DIV>
 								</DIV>
 								<DIV class="alert alert-danger col-md-12" role="alert" ng-show="lotplanSearchError">
