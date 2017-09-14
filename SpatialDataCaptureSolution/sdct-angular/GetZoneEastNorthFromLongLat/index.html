@@ -37,6 +37,7 @@
 			 *  Zone is derived from the longitude.
 			 */
 			function getZoneEastNorthFromLongLat(longitude, latitude) {		
+			debugger
 				var firstProjection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"; //EPSG:4326
 				var secondProjection = "+proj=utm +zone=<ZONE> +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs"; //EPSG:32756
 				var zone = 1 + Math.floor((longitude+180)/6);
@@ -49,9 +50,10 @@
 				}
 			}
 			
-			var longitude = 153.021072; // Brisbane
+			//-25.086887586556443, lng: 146.85504198074344
+			var longitude = 146.85504198074344; // Brisbane
 			//var longitude = 80.021072; // Zone 44 somewhere??
-			var latitude = -27.470125;
+			var latitude = -25.086887586556443;
 			
 			var coordinates = [longitude, latitude];
 			console.log('testing longitude=' + coordinates[0]);
